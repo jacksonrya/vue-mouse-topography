@@ -1,4 +1,4 @@
-# vue-contour-lines-2
+# vue-contour-lines
 
 ## Project setup
 ```

@@ -1,7 +1,5 @@
 <template>
   <div class="topography" @click="handleClick" @mousemove="handleMousemove" @mouseleave="disable()">
-    <div class="box-1 topography-block"></div>
-
     <div class="p5-canvas" :id="sketchId"></div>
   </div>
 </template>
@@ -179,6 +177,8 @@ export default {
 
 <style lang="scss">
 .topography {
+  position: relative;
+
   align-items: center;
   justify-content: center;
 }
@@ -195,7 +195,6 @@ export default {
 }
 
 .p5-canvas {
-  position: relative;
   top: 0;
   left: 0;
   width: 100%;
