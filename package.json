@@ -1,19 +1,54 @@
 {
-  "name": "vue-contour-lines-2",
+  "name": "vue-contour-lines",
   "version": "0.1.0",
-  "private": true,
+  "description": "A contour line canvas for Vue.",
+  "private": false,
+  "main": "dist/vue-contour-lines.js",
+  "module": "dist/vue-contour-lines.esm.js",
+  "unpkg": "dist/vue-contour-lines.min.js",
+  "browser": {
+    "./sfc": "src/vue-contour-lines.vue"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+    "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-contour-lines.umd.js",
+    "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-contour-lines.esm.js",
+    "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-contour-lines.min.js",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacksonrya/vue-contour-lines"
+  },
   "dependencies": {
-    "core-js": "^3.6.4",
-    "vue": "^2.6.11"
+    "core-js": "^3.6.4"
+  },
+  "keywords": [
+    "vue",
+    "p5",
+    "contour lines",
+    "topography",
+    "matrix",
+    "heatmap"
+  ],
+  "author": {
+    "name": "Jackson Baker Ryan",
+    "email": "jackson.baker.ryan@gmail.com",
+    "url": "https://jbr.fyi"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/jacksonrya/vue-contour-lines#readme",
+  "bugs": {
+    "url": "https://github.com/jacksonrya/vue-contour-lines/issues"
   },
   "devDependencies": {
+    "rollup": "^0.47.4",
+    "@rollup/plugin-buble": "^0.21.1",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "rollup-plugin-vue": "^2.4.1",
     "@vue/cli-plugin-babel": "~4.2.0",
     "@vue/cli-plugin-e2e-cypress": "~4.2.0",
     "@vue/cli-plugin-eslint": "~4.2.0",
@@ -23,6 +58,11 @@
     "babel-eslint": "^10.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.1.2",
-    "vue-template-compiler": "^2.6.11"
-  }
+    "vue-template-compiler": "^2.6.11",
+    "lodash": "^4.17.15",
+    "vue": "^2.6.11"
+  },
+  "files": [
+    "dist/*"
+  ]
 }
