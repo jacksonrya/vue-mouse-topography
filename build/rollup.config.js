@@ -9,7 +9,6 @@ export default {
         name: 'VueContourLines',
         exports: 'named',
     },
-    moduleName: 'VueContourLines',
     plugins: [
         commonjs(),
         vue({

@@ -59,8 +59,8 @@
     "eslint-plugin-vue": "^6.1.2",
     "lodash": "^4.17.15",
     "p5": "^0.10.2",
-    "rollup": "^0.47.4",
-    "rollup-plugin-vue": "^2.4.1",
+    "rollup": "^1.31.1",
+    "rollup-plugin-vue": "^5.1.6",
     "sass-loader": "^8.0.2",
     "vue": "^2.6.11",
     "vue-template-compiler": "^2.6.11"
