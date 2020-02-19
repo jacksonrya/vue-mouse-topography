@@ -6,7 +6,7 @@
 
 <script>
 import _ from 'lodash'
-import { TopographySketch } from '@/sketch'
+import { TopographySketch } from './sketch'
 
 const DEFAULT_SIMPLIFY_COEFFICIENT = 20 // Degree of polygon simplification
 const DEFAULT_PING_TIME = 15 // Amount of time(ms) between updates, in milliseconds.

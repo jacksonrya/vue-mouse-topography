@@ -1,7 +1,11 @@
 /* eslint-disable no-unused-vars */
 import _ from 'lodash'
 import P5 from 'p5'
-import * as Topography from '@/Contours'
+import * as Topography from './Contours'
+
+const COLORS = {
+  PEACH: [30, 4, 100]
+}
 
 const DEBUG = false
 const DRAW_GRID = DEBUG && false
@@ -9,31 +13,31 @@ const DRAW_INTERACTVE_DOM = DEBUG && false
 
 // The resolution of the drawing--contour line granularity.
 export class Resolution {
-  constructor (width, height) {
+  constructor(width, height) {
     this.width = width
     this.height = height
   }
 
-  get columnCount () {
+  get columnCount() {
     return Math.ceil(this.width)
   }
 
-  get rowCount () {
+  get rowCount() {
     return Math.ceil(this.height)
   }
 
-  get size () {
+  get size() {
     return {
       width: this.columnCount,
       height: this.rowCount
     }
   }
 
-  get aspectRatio () {
+  get aspectRatio() {
     return this.columnCount / this.rowCount
   }
 
-  get cellCount () {
+  get cellCount() {
     return this.columnCount * this.rowCount
   }
 }
@@ -42,19 +46,19 @@ export class Resolution {
  * The matrix of cells that span the sketch client.
  */
 export class Plat {
-  constructor (size, resolution) {
+  constructor(size, resolution) {
     this.size = size
     this.resolution = resolution
   }
 
-  get cellSize () {
+  get cellSize() {
     return {
       width: this.size.width / this.resolution.columnCount,
       height: this.size.height / this.resolution.rowCount
     }
   }
 
-  getCell (mousePosition) {
+  getCell(mousePosition) {
     if (!mousePosition || !mousePosition.x || !mousePosition.y) {
       return {}
     }
@@ -67,7 +71,7 @@ export class Plat {
 }
 
 class TopographySketch {
-  constructor ({ canvasId = 'p5-canvas', dimensions = undefined, simplify = 30, preset = Topography.EMPTY }) {
+  constructor({ canvasId = 'p5-canvas', dimensions = undefined, simplify = 30, preset = Topography.EMPTY }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
     this.dimensions = dimensions // The screen size of the topography container.
 
@@ -87,7 +91,7 @@ class TopographySketch {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getGoldsteinInstance ({ canvasId, dimensions, simplify }) {
+  static getGoldsteinInstance({ canvasId, dimensions, simplify }) {
     return new this({ canvasId, dimensions, simplify, preset: Topography.GOLDSTEIN })
   }
 
@@ -96,7 +100,7 @@ class TopographySketch {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getRandomInstance ({ canvasId, dimensions, simplify }) {
+  static getRandomInstance({ canvasId, dimensions, simplify }) {
     return new this({ canvasId, dimensions, simplify, preset: Topography.RANDOM })
   }
 
@@ -105,11 +109,11 @@ class TopographySketch {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getEmptyInstance ({ canvasId, dimensions, simplify }) {
+  static getEmptyInstance({ canvasId, dimensions, simplify }) {
     return new this({ canvasId, dimensions, simplify, preset: Topography.EMPTY })
   }
 
-  get plat () {
+  get plat() {
     return this._plat
   }
 
@@ -118,15 +122,15 @@ class TopographySketch {
    * @param {Object} mousePosition Coordinates of the mouse.
    * @returns {Object} Coordinates of the cell.
    */
-  getCell (mousePosition) {
+  getCell(mousePosition) {
     return this.plat.getCell(mousePosition)
   }
 
-  addPoint () {
+  addPoint() {
     console.log('Adding point not yet implemented.')
   }
 
-  setup (p5) {
+  setup(p5) {
     return () => {
       p5.createCanvas(this.dimensions.width, this.dimensions.height)
       p5.noLoop()
@@ -135,7 +139,7 @@ class TopographySketch {
     }
   }
 
-  draw (p5) {
+  draw(p5) {
     return () => {
       p5.push()
 
@@ -150,8 +154,9 @@ class TopographySketch {
   /**
    * Draws sketch elements that render below (z-index) the topography.
    */
-  drawBackground () {
-    this.p5.background('white')
+  drawBackground() {
+    // this.p5.background('transparent')
+    this.p5.background(...COLORS.PEACH)
 
     if (DRAW_GRID) this.drawGrid()
   }
@@ -159,11 +164,11 @@ class TopographySketch {
   /**
    * Draws sketch elements that render above (z-index) the topography.
    */
-  drawForeground () {
+  drawForeground() {
     if (DRAW_INTERACTVE_DOM) this.drawInteractiveDOM()
   }
 
-  drawInteractiveDOM () {
+  drawInteractiveDOM() {
     const els = document.getElementsByClassName('topography-block')
 
     els.forEach(el => {
@@ -176,14 +181,14 @@ class TopographySketch {
     })
   }
 
-  update (mousePosition, force = 0) {
+  update(mousePosition, force = 0) {
     const { x, y } = mousePosition
 
     this._updateMatrix({ x, y }, force)
     this.p5.redraw()
   }
 
-  _updateMatrix (mousePosition, force) {
+  _updateMatrix(mousePosition, force) {
     // TODO: use better logic to find the closest gridpoint(or center) and change it there
     // TODO: add distributed changes
     let x
@@ -205,45 +210,114 @@ class TopographySketch {
     this.topography.raise({ x, y }, force)
   }
 
-  makeMultipolygon (mp) {
+  makeMultipolygon(multipolygon) {
     const p5 = this.p5
+    let mp = multipolygon //.reverse()
 
     mp.forEach((polygon) => {
-      const positiveSpace = polygon[0]
+      const [positiveSpace, ...negativeSpaces] = polygon
 
-      p5.beginShape()
+      // console.log(positiveSpace, negativeSpaces)
 
-      this.makePolygon(positiveSpace)
+      p5.beginShape(p5.TRIANGLE_STRIP)
 
-      polygon.forEach(negativeSpace => {
-        p5.beginContour()
+      p5.fill(...COLORS.PEACH)
+      p5.stroke('black')
+      // p5.noStroke()
+      this.makePolygon(positiveSpace) // TODO: does this only draw the outer/bg shape that clings to the viewport?
 
-        this.makePolygon(negativeSpace)
+      p5.endShape()
 
-        p5.endContour()
+
+      negativeSpaces.forEach((negativeSpace, i) => {
+        console.log('drawing negative space')
+        let options = {}
+        // eslint-disable-next-line no-constant-condition
+        // if (i === 0) {
+        //   p5.stroke('black')
+        //   p5.fill('transparent')
+        //   // p5.noStroke()
+        //   // p5.noFill()
+        //   options.style = 'solid'
+
+        //   p5.beginShape()
+        // } else {
+        //   p5.stroke('black')
+        //   p5.fill('transparent')
+
+        //   options.style = 'dashed'
+
+        //   p5.beginShape()
+        // }
+
+        p5.stroke('black')
+        p5.fill('transparent')
+        p5.strokeWeight(0.2)
+
+        options.style = 'dashed'
+
+        p5.beginShape()
+
+        // p5.beginShape(p5.LINES)
+        // p5.beginContour()
+
+
+        this.makePolygon(negativeSpace, options)
+
+        // p5.endContour()
+        p5.endShape()
       })
+
+
+      p5.fill('transparent')
+      p5.stroke('black')
+      this.resetStrokeWeight()
 
       p5.endShape()
     })
   }
 
-  getCanvasCoordinate (matrixX, matrixY) {
+  getCanvasCoordinate(matrixX, matrixY) {
     return {
       x: Math.floor(this.p5.map(matrixX, 0, this.resolution.columnCount, 0, this.dimensions.width)),
       y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.dimensions.height))
     }
   }
 
-  makePolygon (polygon) {
-    polygon.forEach(coor => {
-      const [x, y] = coor
+  linedash(x1, y1, x2, y2, list = [10, 10]) {
+    this.p5.drawingContext.setLineDash(list); // set the "dashed line" mode
+    this.p5.line(x1, y1, x2, y2); // draw the line
+    this.p5.drawingContext.setLineDash([]); // reset into "solid line" mode
+  }
+
+
+  makePolygon(polygon, { style } = { style: 'solid' }) {
+    if (style === 'dashed') {
+      // ?? TODO is the last point of the polygon the same as the first??
+      let prevPointOnCanvas = this.getCanvasCoordinate(...polygon[polygon.length - 1]) // Initialize to the last point of the polygon
+
+      polygon.forEach((point, i, points) => {
+        const [x, y] = point
+        const pointOnCanvas = this.getCanvasCoordinate(x, y)
+
+        this.linedash(pointOnCanvas.x, pointOnCanvas.y, prevPointOnCanvas.x, prevPointOnCanvas.y)
+
+        prevPointOnCanvas = pointOnCanvas
+      })
+
+      return
+    }
+
+    // Solid line for default
+    polygon.forEach(point => {
+      const [x, y] = point
       const canvasCoor = this.getCanvasCoordinate(x, y)
 
       this.p5.vertex(canvasCoor.x, canvasCoor.y)
     })
   }
 
-  makeMatrix (matrix) {
+  makeMatrix(matrix) {
     matrix.forEach((z, i) => {
       const x = i % this.resolution.columnCount
       const y = i / this.resolution.columnCount
@@ -254,18 +328,18 @@ class TopographySketch {
     })
   }
 
-  drawGrid () {
+  drawGrid() {
     this.p5.stroke(0, 0, 90)
     this.p5.fill(0, 0, 90)
     this.makeMatrix(_.fill(new Array(this.topography.matrixArea), 2))
   }
 
-  resetStrokeWeight () {
+  resetStrokeWeight() {
     const defaultStroke = 0.2
     this.p5.strokeWeight(defaultStroke)
   }
 
-  drawTopography () {
+  drawTopography() {
     const p5 = this.p5
 
     const STYLE_CHOROPLETH = false
@@ -273,8 +347,8 @@ class TopographySketch {
     const END_COLOR = [0, 0, 60]
     const DRAW_MATRIX = false
 
-    const fill = (color = 'white') => {
-      p5.fill('white')
+    const fill = (color = 'transparent') => {
+      p5.fill('blue')
       if (STYLE_CHOROPLETH) p5.fill(color)
     }
     const stroke = color => p5.stroke(STYLE_CHOROPLETH ? '#4b4b4b' : color)

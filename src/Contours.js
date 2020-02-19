@@ -141,7 +141,9 @@ class Topography {
   }
 
   get matrixArea () {
-    return this.resolution?.cellCount || 0
+    if (this.resolution) return this.resolution.cellCount
+
+    return 0
   }
 
   _initMatrix () {
