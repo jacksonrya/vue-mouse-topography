@@ -10,7 +10,7 @@
     "./sfc": "src/vue-contour-lines.vue"
   },
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "./bin/serve.sh",
     "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
     "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-contour-lines.umd.js",
     "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-contour-lines.esm.js",
@@ -48,7 +48,6 @@
     "@rollup/plugin-buble": "^0.21.1",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@vue/cli-plugin-babel": "~4.2.0",
-    "@vue/cli-plugin-e2e-cypress": "~4.2.0",
     "@vue/cli-plugin-eslint": "~4.2.0",
     "@vue/cli-plugin-unit-jest": "~4.2.0",
     "@vue/cli-service": "~4.2.0",
