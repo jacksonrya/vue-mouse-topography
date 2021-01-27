@@ -1,12 +1,12 @@
 'use strict'
 
-import vueContourLines from './vue-contour-lines.vue'
+import vueMouseTopography from './vue-mouse-topography.vue'
 
 // Declare install function executed by Vue.use()
 export function install(Vue) {
   if (install.installed) return;
   install.installed = true;
-  Vue.component('vue-contour-lines', vueContourLines);
+  Vue.component('VueMouseTopography', vueMouseTopography);
 }
 
 // Create module definition for Vue.use()
@@ -23,9 +23,9 @@ if (GlobalVue) {
   GlobalVue.use(plugin);
 }
 
-// To allow use as module (npm/webpack/etc.) export vueContourLines
-export default vueContourLines;
+// To allow use as module (npm/webpack/etc.) export vueMouseTopography
+export default vueMouseTopography;
 
-// Can import as directive - e.g. import { VueContourLines } from 'vue-contour-lines';
-export const VueContourLines = vueContourLines;
+// Can import as directive - e.g. import { VueContourLines } from 'vue-mouse-topography';
+export const VueMouseTopography = vueMouseTopography;
 

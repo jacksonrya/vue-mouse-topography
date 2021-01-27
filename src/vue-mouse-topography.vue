@@ -214,10 +214,10 @@ export default {
   justify-content: center;
 
   pointer-events: none;
+}
 
-  .canvas {
-    width: 100%;
-    height: 100%;
-  }
+.p5-canvas .canvas {
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -19,16 +19,15 @@
   "files": [
     "dist/*"
   ],
-  "main": "dist/vue-mouse-topography.js",
+  "main": "dist/vue-mouse-topography.esm.js",
   "module": "dist/vue-mouse-topography.esm.js",
   "unpkg": "dist/vue-mouse-topography.min.js",
-  "style": "dist/your-component-name.css",
   "browser": {
-    "./sfc": "src/my-component.vue"
+    "./sfc": "src/vue-mouse-topography.vue"
   },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+    "build": "rollup --config build/rollup.config.js",
     "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-mouse-topography.umd.js",
     "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-mouse-topography.esm.js",
     "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-mouse-topography.min.js",
@@ -42,7 +41,7 @@
     "vue": "^2.6.12"
   },
   "devDependencies": {
-    "@jacksonrya/eslint-config-standard": "^1.0.3",
+    "@jacksonrya/eslint-config-standard": "^1.0.6",
     "@rollup/plugin-buble": "^0.21.3",
     "@rollup/plugin-commonjs": "^17.0.0",
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -50,9 +49,10 @@
     "@vue/cli-service": "~4.5.0",
     "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
-    "eslint": "^7.18.0",
+    "eslint": "^6.8.0",
     "eslint-plugin-vue": "^7.5.0",
     "rollup": "^2.38.0",
+    "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-vue": "^6.0.0",
     "vue-template-compiler": "^2.6.12"
   },
