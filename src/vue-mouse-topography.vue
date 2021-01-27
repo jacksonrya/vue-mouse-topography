@@ -1,12 +1,21 @@
 <template>
-  <div class="topography" @click="handleClick" @mousemove="handleMousemove" @mouseleave="disable()">
-    <div class="p5-canvas" :id="sketchId"></div>
+  <div 
+    class="topography"
+    @click="handleClick"
+    @mousemove="handleMousemove"
+    @mouseleave="disable()"
+  >
+    <!-- <div -->
+    <!--   :id="sketchId" -->
+    <!--   class="p5&#45;canvas" -->
+    <!-- /> -->
   </div>
 </template>
 
 <script>
 import _ from 'lodash'
-import { TopographySketch } from '@/sketch'
+
+import { TopographySketch } from './sketch'
 
 const DEFAULT_SIMPLIFY_COEFFICIENT = 20 // Degree of polygon simplification
 const DEFAULT_PING_TIME = 15 // Amount of time(ms) between updates, in milliseconds.
@@ -16,7 +25,7 @@ const DEFAULT_DECAY_TIME = 2000 // Amount of time(ms) before a cell stops growin
 var id = 0 // Unique id of of this component // TODO: test that this enables parallel topography instances
 
 export default {
-  name: 'Topography',
+  name: 'VueMouseTopography',
   props: {
     // Degree to which simplification is applied to the contours.
     simplify: {
@@ -24,7 +33,7 @@ export default {
       required: false,
       default () {
         return DEFAULT_SIMPLIFY_COEFFICIENT
-      }
+      },
     },
 
     // Amount of time(ms) between updates.
@@ -33,7 +42,7 @@ export default {
       required: false,
       default () {
         return DEFAULT_PING_TIME
-      }
+      },
     },
 
     // The amount of 'z' added to a point during mouse movement.
@@ -42,17 +51,17 @@ export default {
       required: false,
       default () {
         return DEFAULT_FORCE
-      }
+      },
     },
 
     // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
-    decayTime: {
+    decay: {
       type: Number,
       required: false,
       default () {
         return DEFAULT_DECAY_TIME
-      }
-    }
+      },
+    },
   },
   data () {
     return {
@@ -63,7 +72,7 @@ export default {
       mouseCell: undefined, // Coordinates of the resolution cell that the mouse is within.
       prevMouseCell: undefined, // Previous coordinates of the resolution cell that the mouse was within.
       updateIntervalId: undefined, // The id of the interval between updates.
-      restingPointerStartTime: undefined
+      restingPointerStartTime: undefined,
     }
   },
   computed: {
@@ -85,20 +94,20 @@ export default {
         this.mousePosition.x === this.prevMousePosition.x &&
         this.mousePosition.y === this.prevMousePosition.y
       )
-    }
+    },
   },
   mounted () {
     const topographyConfig = {
       canvasId: this.sketchId,
       dimensions: { width: this.width, height: this.height },
-      simplify: this.simplify
+      simplify: this.simplify,
     }
 
     this.sketch = TopographySketch.getEmptyInstance(topographyConfig)
 
     this.updateIntervalId = setInterval(this.update, this.ping)
   },
-  destroyed () {
+  unmounted () {
     clearInterval(this.updateIntervalId)
   },
   methods: {
@@ -110,7 +119,7 @@ export default {
       const rect = this.$el.getBoundingClientRect()
       return {
         x: e.pageX - rect.x,
-        y: e.pageY + Math.abs(rect.y)
+        y: e.pageY + Math.abs(rect.y),
       }
     },
 
@@ -149,7 +158,7 @@ export default {
       if (this.mousePosition) {
         const hoverTime = new Date().getTime() - this.restingPointerStartTime
 
-        let hoverForce = (this.decayTime - hoverTime) / this.decayTime
+        let hoverForce = (this.decay - hoverTime) / this.decay
         if (hoverForce < 0) hoverForce = 0
 
         const force = this.mouseCellChanged(this.prevMouseCell, this.mouseCell)
@@ -170,12 +179,12 @@ export default {
       this.restingPointerStartTime = undefined
       this.mousePosition = undefined
       this.mouseCell = undefined
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style lang="scss">
+<style>
 .topography {
   position: relative;
 

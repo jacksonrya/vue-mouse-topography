@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import _ from 'lodash'
 import P5 from 'p5'
-import * as Topography from '@/Contours'
+
+import * as Topography from './Contours'
 
 const DEBUG = false
 const DRAW_GRID = DEBUG && false
@@ -25,7 +26,7 @@ export class Resolution {
   get size () {
     return {
       width: this.columnCount,
-      height: this.rowCount
+      height: this.rowCount,
     }
   }
 
@@ -50,7 +51,7 @@ export class Plat {
   get cellSize () {
     return {
       width: this.size.width / this.resolution.columnCount,
-      height: this.size.height / this.resolution.rowCount
+      height: this.size.height / this.resolution.rowCount,
     }
   }
 
@@ -61,17 +62,22 @@ export class Plat {
 
     return {
       x: Math.floor(mousePosition.x / this.cellSize.width),
-      y: Math.floor(mousePosition.y / this.cellSize.height)
+      y: Math.floor(mousePosition.y / this.cellSize.height),
     }
   }
 }
 
 class TopographySketch {
-  constructor ({ canvasId = 'p5-canvas', dimensions = undefined, simplify = 30, preset = Topography.EMPTY }) {
+  constructor ({
+    canvasId = 'p5-canvas',
+    dimensions = undefined,
+    simplify = 30,
+    preset = Topography.EMPTY, 
+  }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
     this.dimensions = dimensions // The screen size of the topography container.
 
-    this.p5 = new P5((p5) => { // The sketch.
+    this.p5 = new P5(p5 => { // The sketch.
       p5.setup = this.setup(p5)
       p5.draw = this.draw(p5)
     }, canvasId)
@@ -87,8 +93,12 @@ class TopographySketch {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getGoldsteinInstance ({ canvasId, dimensions, simplify }) {
-    return new this({ canvasId, dimensions, simplify, preset: Topography.GOLDSTEIN })
+  static getGoldsteinInstance ({
+    canvasId, dimensions, simplify, 
+  }) {
+    return new this({
+      canvasId, dimensions, simplify, preset: Topography.GOLDSTEIN, 
+    })
   }
 
   /**
@@ -96,8 +106,12 @@ class TopographySketch {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getRandomInstance ({ canvasId, dimensions, simplify }) {
-    return new this({ canvasId, dimensions, simplify, preset: Topography.RANDOM })
+  static getRandomInstance ({
+    canvasId, dimensions, simplify, 
+  }) {
+    return new this({
+      canvasId, dimensions, simplify, preset: Topography.RANDOM, 
+    })
   }
 
   /**
@@ -105,8 +119,12 @@ class TopographySketch {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getEmptyInstance ({ canvasId, dimensions, simplify }) {
-    return new this({ canvasId, dimensions, simplify, preset: Topography.EMPTY })
+  static getEmptyInstance ({
+    canvasId, dimensions, simplify, 
+  }) {
+    return new this({
+      canvasId, dimensions, simplify, preset: Topography.EMPTY, 
+    })
   }
 
   get plat () {
@@ -168,7 +186,9 @@ class TopographySketch {
 
     els.forEach(el => {
       const rect = el.getBoundingClientRect()
-      const { x, y, width, height } = rect
+      const {
+        x, y, width, height, 
+      } = rect
 
       const padding = 40
 
@@ -208,7 +228,7 @@ class TopographySketch {
   makeMultipolygon (mp) {
     const p5 = this.p5
 
-    mp.forEach((polygon) => {
+    mp.forEach(polygon => {
       const positiveSpace = polygon[0]
 
       p5.beginShape()
@@ -230,13 +250,13 @@ class TopographySketch {
   getCanvasCoordinate (matrixX, matrixY) {
     return {
       x: Math.floor(this.p5.map(matrixX, 0, this.resolution.columnCount, 0, this.dimensions.width)),
-      y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.dimensions.height))
+      y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.dimensions.height)),
     }
   }
 
   makePolygon (polygon) {
     polygon.forEach(coor => {
-      const [x, y] = coor
+      const [ x, y ] = coor
       const canvasCoor = this.getCanvasCoordinate(x, y)
 
       this.p5.vertex(canvasCoor.x, canvasCoor.y)
@@ -269,8 +289,16 @@ class TopographySketch {
     const p5 = this.p5
 
     const STYLE_CHOROPLETH = false
-    const START_COLOR = [0, 0, 0] // SHOULD BE #4b4b4b
-    const END_COLOR = [0, 0, 60]
+    const START_COLOR = [ 
+      0,
+      0,
+      0, 
+    ] // SHOULD BE #4b4b4b
+    const END_COLOR = [ 
+      0,
+      0,
+      60, 
+    ]
     const DRAW_MATRIX = false
 
     const fill = (color = 'white') => {

@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-import _ from 'lodash'
 import * as d3 from 'd3-contour'
+import _ from 'lodash'
 
 export const EMPTY = 'empty'
 export const RANDOM = 'random'
@@ -12,7 +12,7 @@ const THRESHOLDS = {
   empty: { threshold: function () { return _.range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
   random: { threshold: function () { return _.range(0, 100, 10) } },
   gradient: { threshold: function () { return _.range(0, this.matrixArea, this.matrixArea / 10) } },
-  goldstein: { threshold: function () { return _.range(2, 21).map(p => Math.pow(2, p)) } }
+  goldstein: { threshold: function () { return _.range(2, 21).map(p => Math.pow(2, p)) } },
 }
 
 const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line.
@@ -94,7 +94,7 @@ class Topography {
 
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
-        const coor = [x + j, y + i]
+        const coor = [ x + j, y + i ]
         neighborIndexes.push(this._getMatrixIndex(...coor))
         neighborCoors.push(...coor)
       }
@@ -108,7 +108,7 @@ class Topography {
 
     const currMatrixValue = this._getMatrixValue(this._getMatrixIndex(x, y))
     // console.log([currMatrixValue, ...neighbors])
-    const newMatrixValue = [currMatrixValue, ...neighbors].reduce((prev, curr) => prev + curr) / 9
+    const newMatrixValue = [ currMatrixValue, ...neighbors ].reduce((prev, curr) => prev + curr) / 9
     // console.log(newMatrixValue)
     this._addToMatrixValue(this._getMatrixIndex(x, y), (newMatrixValue || 0)) // TODO: this is always returning 0 ? is newMatrixValue always invalid?
 
@@ -123,7 +123,7 @@ class Topography {
     const m = this.resolution.rowCount
 
     const contours = d3.contours()
-      .size([n, m])
+      .size([ n, m ])
       .thresholds(this._threshold())
 
     return contours(matrix)
@@ -164,7 +164,7 @@ class Topography {
               0,
               Math.random() * 100,
               (x * 10) + y,
-              this._randomBm() * 100
+              this._randomBm() * 100,
             ][3]
 
             if (z < this.min) this.min = z
@@ -196,7 +196,7 @@ class Topography {
         }
 
         return values
-      }
+      },
 
     }
 
