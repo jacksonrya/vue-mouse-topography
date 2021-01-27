@@ -19,7 +19,7 @@
   "files": [
     "dist/*"
   ],
-  "main": "dist/vue-mouse-topography.min.js",
+  "main": "dist/vue-mouse-topography.esm.js",
   "browser": {
     "./sfc": "src/vue-mouse-topography.vue"
   },
