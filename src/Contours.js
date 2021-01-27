@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as d3 from 'd3-contour'
-import { fill, range } from 'lodash'
+import fill from 'lodash-es/fill.js'
+import range from 'lodash-es/range.js'
 
 export const EMPTY = 'empty'
 export const RANDOM = 'random'

@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { isEqual } from 'lodash'
+import isEqual from 'lodash-es/isEqual.js'
 
 import { TopographySketch } from './sketch'
 

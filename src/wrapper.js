@@ -26,6 +26,3 @@ if (GlobalVue) {
 // To allow use as module (npm/webpack/etc.) export vueMouseTopography
 export default vueMouseTopography;
 
-// Can import as directive - e.g. import { VueContourLines } from 'vue-mouse-topography';
-export const VueMouseTopography = vueMouseTopography;
-

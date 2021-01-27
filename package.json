@@ -19,10 +19,7 @@
   "files": [
     "dist/*"
   ],
-  "main": "dist/vue-mouse-topography.esm.js",
-  "browser": {
-    "./sfc": "src/vue-mouse-topography.vue"
-  },
+  "browser": "dist/vue-mouse-topography.esm.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "rollup --config build/rollup.config.js",
@@ -34,24 +31,23 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "d3-contour": "^2.0.0",
-    "lodash": "^4.17.20",
+    "lodash-es": "^4.17.20",
     "p5": "^1.2.0",
     "vue": "^2.6.12"
   },
   "devDependencies": {
     "@jacksonrya/eslint-config-standard": "^1.0.6",
-    "@rollup/plugin-buble": "^0.21.3",
     "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.1.0",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-plugin-vue": "^7.5.0",
     "rollup": "^2.38.0",
     "rollup-plugin-css-only": "^3.1.0",
-    "rollup-plugin-vue": "^6.0.0",
+    "rollup-plugin-vue": "4.*",
     "vue-template-compiler": "^2.6.12"
   },
   "browserslist": [

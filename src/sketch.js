@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { fill } from 'lodash'
+import fill from 'lodash-es/fill.js'
 import P5 from 'p5'
 
 import * as Topography from './Contours'
