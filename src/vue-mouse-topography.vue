@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import { isEqual } from 'lodash'
 
 import { TopographySketch } from './sketch'
 
@@ -148,7 +148,7 @@ export default {
     mouseCellChanged (prevMouseCell, mouseCell) {
       if (!prevMouseCell && !mouseCell) return false
 
-      return !_.isEqual(prevMouseCell, mouseCell)
+      return !isEqual(prevMouseCell, mouseCell)
     },
 
     /**

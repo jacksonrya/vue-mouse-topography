@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as d3 from 'd3-contour'
-import _ from 'lodash'
+import { fill, range } from 'lodash'
 
 export const EMPTY = 'empty'
 export const RANDOM = 'random'
@@ -9,10 +9,10 @@ export const GOLDSTEIN = 'goldstein'
 
 // List of values that seperate contour buckets. The topography heights at which contours lines are drawn.
 const THRESHOLDS = {
-  empty: { threshold: function () { return _.range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
-  random: { threshold: function () { return _.range(0, 100, 10) } },
-  gradient: { threshold: function () { return _.range(0, this.matrixArea, this.matrixArea / 10) } },
-  goldstein: { threshold: function () { return _.range(2, 21).map(p => Math.pow(2, p)) } },
+  empty: { threshold: function () { return range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
+  random: { threshold: function () { return range(0, 100, 10) } },
+  gradient: { threshold: function () { return range(0, this.matrixArea, this.matrixArea / 10) } },
+  goldstein: { threshold: function () { return range(2, 21).map(p => Math.pow(2, p)) } },
 }
 
 const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line.
@@ -140,18 +140,20 @@ class Topography {
     return num
   }
 
-  get matrixArea () {
-    return this.resolution?.cellCount || 0
+  get matrixArea() {
+    if (!this.resolution) return 0
+
+    return this.resolution.cellCount
   }
 
   _initMatrix () {
     const initValues = () => {
-      return _.fill(new Array(this.matrixArea), 10) // TODO init should be to 0, but might have an edge-case bug, so testing w 10 :)
+      return fill(new Array(this.matrixArea), 10) // TODO init should be to 0, but might have an edge-case bug, so testing w 10 :)
     }
 
     const matrices = {
       gradient: () => {
-        return _.range(0, this.matrixArea)
+        return range(0, this.matrixArea)
       },
       random: () => {
         const values = initValues()

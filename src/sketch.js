@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import _ from 'lodash'
+import { fill } from 'lodash'
 import P5 from 'p5'
 
 import * as Topography from './Contours'
@@ -277,7 +277,7 @@ class TopographySketch {
   drawGrid () {
     this.p5.stroke(0, 0, 90)
     this.p5.fill(0, 0, 90)
-    this.makeMatrix(_.fill(new Array(this.topography.matrixArea), 2))
+    this.makeMatrix(fill(new Array(this.topography.matrixArea), 2))
   }
 
   resetStrokeWeight () {
