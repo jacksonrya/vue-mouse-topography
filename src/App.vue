@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <mouse-topo
+      ref="topo"
       class="contours"
       :simplify="controls.simplify.value"
       :ping="controls.ping.value"
@@ -33,6 +34,13 @@
           </td>
         </tr>
       </tbody>
+
+      <button @click="reset">
+        reset
+      </button>
+      <button @click="randomize">
+        randomize
+      </button>
     </table>
   </div>
 </template>
@@ -72,6 +80,14 @@ export default {
   components: { MouseTopo },
   data() {
     return { controls: CONTROLS }
+  },
+  methods: {
+    reset () {
+      this.$refs.topo.reset()
+    },
+    randomize () {
+      this.$refs.topo.randomize()
+    },
   },
 };
 </script>

@@ -69,6 +69,16 @@ export default class {
     })
   }
 
+  reset() {
+    this.topography.reset()
+    this.p5.redraw()
+  }
+
+  randomize() {
+    this.topography.randomize()
+    this.p5.redraw()
+  }
+
   update (mousePosition, force = 0) {
     const { x, y } = mousePosition
 

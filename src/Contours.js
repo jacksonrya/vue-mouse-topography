@@ -42,6 +42,11 @@ export class Contours {
     return this._matrix
   }
 
+  set matrix(matrix) {
+    // validate that the new matrix can replace the old
+    this._matrix = matrix;
+  }
+
   get matrixArea() {
     if (!this.resolution) return 0
 
@@ -61,6 +66,10 @@ export class Contours {
     return this._getIsobands(this.matrix)
   }
 
+  resetMatrix() {
+
+  }
+
   _getMatrixIndex (x, y) { // TODO move to matrix class
     return Math.floor((y * this.resolution.columnCount) + x)
   }
@@ -75,6 +84,14 @@ export class Contours {
     }
 
     return this._matrix[i]
+  }
+
+  reset() {
+    this._clearMatrix()
+  }
+
+  randomize() {
+    this._randomizeMatrix()
   }
 
   raise ({ x, y }, zDelta = 100, density = 4) {
@@ -155,6 +172,36 @@ export class Contours {
     num = num / 10.0 + 0.5 // Translate to 0 -> 1
     if (num > 1 || num < 0) return this._randomBm() // resample between 0 and 1
     return num
+  }
+
+  _clearMatrix() {
+    this.matrix = fill(new Array(this.matrixArea), 10)
+  }
+
+  _randomizeMatrix() {
+    const values = fill(new Array(this.matrixArea), 10) // TODO reduce redundancy with clearmatrix
+
+    let curr = 0
+
+    for (let x = 0; x < this.resolution.columnCount; x++) {
+      for (let y = 0; y < this.resolution.rowCount; y++) {
+        const z = [
+          0,
+          Math.random() * 100,
+          (x * 10) + y,
+          this._randomBm() * 100,
+        ][3]
+
+        if (z < this.min) this.min = z
+        if (z > this.max) this.max = z
+
+        // values[x * 10 + y] = z
+        values[curr] = z
+        curr++
+      }
+    }
+
+    this.matrix = values
   }
 
   _initMatrix () {

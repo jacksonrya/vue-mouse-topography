@@ -151,6 +151,14 @@ export default {
       return !isEqual(prevMouseCell, mouseCell)
     },
 
+    reset () {
+      this.sketch.reset()
+    },
+
+    randomize() {
+      this.sketch.randomize()
+    },
+
     /**
      * Updates the drawing to represent the current mouse position if one exists.
      */
