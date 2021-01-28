@@ -2,21 +2,20 @@
 import fill from 'lodash-es/fill.js'
 import P5 from 'p5'
 
-import * as Topography from './Contours'
-import Plat from './Plat'
-import Resolution from './Resolution'
-
+import { Contours, THRESHOLD_OPTIONS } from './Contours'
+import { Plat } from './Plat'
+import { Resolution } from './Resolution'
 
 const DEBUG = false
 const DRAW_GRID = DEBUG && false
 const DRAW_INTERACTVE_DOM = DEBUG && false
 
-class TopographySketch {
+export default class {
   constructor ({
     canvasId = 'p5-canvas',
     dimensions = undefined,
     simplify = 30,
-    preset = Topography.EMPTY, 
+    preset = THRESHOLD_OPTIONS.EMPTY, 
   }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
     this.dimensions = dimensions // The screen size of the topography container.
@@ -29,7 +28,7 @@ class TopographySketch {
     this.resolution = new Resolution(dimensions.width / simplify, dimensions.height / simplify) // The resolution of the structured grid.
     this._plat = new Plat(this.dimensions, this.resolution)
 
-    this.topography = new Topography.Topography(this.resolution, this.dimensions, preset) // The topography...
+    this.topography = new Contours(this.resolution, this.dimensions, preset) // The topography...
   }
 
   /**
@@ -41,7 +40,7 @@ class TopographySketch {
     canvasId, dimensions, simplify, 
   }) {
     return new this({
-      canvasId, dimensions, simplify, preset: Topography.GOLDSTEIN, 
+      canvasId, dimensions, simplify, preset: THRESHOLD_OPTIONS.GOLDSTEIN, 
     })
   }
 
@@ -54,7 +53,7 @@ class TopographySketch {
     canvasId, dimensions, simplify, 
   }) {
     return new this({
-      canvasId, dimensions, simplify, preset: Topography.RANDOM, 
+      canvasId, dimensions, simplify, preset: THRESHOLD_OPTIONS.RANDOM, 
     })
   }
 
@@ -67,7 +66,7 @@ class TopographySketch {
     canvasId, dimensions, simplify, 
   }) {
     return new this({
-      canvasId, dimensions, simplify, preset: Topography.EMPTY, 
+      canvasId, dimensions, simplify, preset: THRESHOLD_OPTIONS.EMPTY, 
     })
   }
 
@@ -277,5 +276,3 @@ class TopographySketch {
     }
   }
 }
-
-export { TopographySketch }

@@ -3,12 +3,14 @@ import * as d3 from 'd3-contour'
 import fill from 'lodash-es/fill.js'
 import range from 'lodash-es/range.js'
 
-export const EMPTY = 'empty'
-export const RANDOM = 'random'
-export const GRADIENT = 'gradient'
-export const GOLDSTEIN = 'goldstein'
+export const THRESHOLD_OPTIONS = {
+  EMPTY: 'empty',
+  RANDOM: 'random',
+  GRADIENT: 'gradient',
+  GOLDSTEIN: 'goldstein',
+}
 
-// List of values that seperate contour buckets. The topography heights at which contours lines are drawn.
+// List of values that seperate contour buckets. The z-axis values at which contours lines are drawn.
 const THRESHOLDS = {
   empty: { threshold: function () { return range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
   random: { threshold: function () { return range(0, 100, 10) } },
@@ -18,7 +20,10 @@ const THRESHOLDS = {
 
 const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line.
 
-class Topography {
+/**
+ *
+ */
+export class Contours {
   constructor (resolution, viewport, preset) {
     this.resolution = resolution
     this.viewport = viewport
@@ -38,7 +43,7 @@ class Topography {
     return Math.ceil(this.max - this.min)
   }
 
-  // The number of sorting buckets to accomodate all topography heights.
+  // The number of sorting buckets to accomodate all z-axis values.
   get bucketCount () {
     return Math.ceil(this.max / CONTOUR_INTERVAL)
   }
@@ -214,5 +219,3 @@ class Topography {
     return this._matrix
   }
 }
-
-export { Topography }
