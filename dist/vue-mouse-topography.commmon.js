@@ -1,3 +1,7 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
 /**
  * Removes all key-value entries from the list cache.
  *
@@ -3606,6 +3610,6 @@ if (GlobalVue) {
   GlobalVue.use(plugin);
 }
 
-export default vueMouseTopography;
-export { install };
-//# sourceMappingURL=vue-mouse-topography.esm.js.map
+exports.default = vueMouseTopography;
+exports.install = install;
+//# sourceMappingURL=vue-mouse-topography.commmon.js.map

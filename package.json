@@ -20,6 +20,8 @@
     "dist/*"
   ],
   "main": "dist/vue-mouse-topography.js",
+  "module": "dist/vue-mouse-topography.esm.js",
+  "unpkg": "dist/vue-mouse-topography.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "rollup --config build/rollup.config.js",
