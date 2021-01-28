@@ -30,12 +30,14 @@
     "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-mouse-topography.min.js",
     "lint": "vue-cli-service lint"
   },
+  "peerDependencies": {
+    "vue": "^2.6.12"
+  },
   "dependencies": {
     "core-js": "^3.6.5",
     "d3-contour": "^2.0.0",
     "lodash-es": "^4.17.20",
-    "p5": "^1.2.0",
-    "vue": "^2.6.12"
+    "p5": "^1.2.0"
   },
   "devDependencies": {
     "@jacksonrya/eslint-config-standard": "^1.0.6",
@@ -49,7 +51,9 @@
     "eslint-plugin-vue": "^7.5.0",
     "rollup": "^2.38.0",
     "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-vue": "4.*",
+    "vue": "^2.6.12",
     "vue-template-compiler": "^2.6.12"
   },
   "browserslist": [
