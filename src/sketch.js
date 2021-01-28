@@ -3,69 +3,13 @@ import fill from 'lodash-es/fill.js'
 import P5 from 'p5'
 
 import * as Topography from './Contours'
+import Plat from './Plat'
+import Resolution from './Resolution'
+
 
 const DEBUG = false
 const DRAW_GRID = DEBUG && false
 const DRAW_INTERACTVE_DOM = DEBUG && false
-
-// The resolution of the drawing--contour line granularity.
-export class Resolution {
-  constructor (width, height) {
-    this.width = width
-    this.height = height
-  }
-
-  get columnCount () {
-    return Math.ceil(this.width)
-  }
-
-  get rowCount () {
-    return Math.ceil(this.height)
-  }
-
-  get size () {
-    return {
-      width: this.columnCount,
-      height: this.rowCount,
-    }
-  }
-
-  get aspectRatio () {
-    return this.columnCount / this.rowCount
-  }
-
-  get cellCount () {
-    return this.columnCount * this.rowCount
-  }
-}
-
-/**
- * The matrix of cells that span the sketch client.
- */
-export class Plat {
-  constructor (size, resolution) {
-    this.size = size
-    this.resolution = resolution
-  }
-
-  get cellSize () {
-    return {
-      width: this.size.width / this.resolution.columnCount,
-      height: this.size.height / this.resolution.rowCount,
-    }
-  }
-
-  getCell (mousePosition) {
-    if (!mousePosition || !mousePosition.x || !mousePosition.y) {
-      return {}
-    }
-
-    return {
-      x: Math.floor(mousePosition.x / this.cellSize.width),
-      y: Math.floor(mousePosition.y / this.cellSize.height),
-    }
-  }
-}
 
 class TopographySketch {
   constructor ({
