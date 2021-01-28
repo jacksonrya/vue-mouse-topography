@@ -272,7 +272,7 @@ export default class {
     if (DRAW_MATRIX) {
       this.p5.stroke('black')
       this.p5.fill('black')
-      this.makeMatrix(this.topography.getMatrix())
+      this.makeMatrix(this.topography.matrix)
     }
   }
 }

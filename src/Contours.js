@@ -39,6 +39,16 @@ export class Contours {
     return new this(resolution)
   }
 
+  get matrix() {
+    return this._matrix
+  }
+
+  get matrixArea() {
+    if (!this.resolution) return 0
+
+    return this.resolution.cellCount
+  }
+
   get zRange () {
     return Math.ceil(this.max - this.min)
   }
@@ -110,8 +120,6 @@ export class Contours {
       return this._getMatrixValue(i)
     })
 
-    // console.log(x, y, this._getMatrixIndex(x, y))
-
     const currMatrixValue = this._getMatrixValue(this._getMatrixIndex(x, y))
     // console.log([currMatrixValue, ...neighbors])
     const newMatrixValue = [ currMatrixValue, ...neighbors ].reduce((prev, curr) => prev + curr) / 9
@@ -124,7 +132,7 @@ export class Contours {
     })
   }
 
-  getIsobands (matrix = this.getMatrix()) {
+  getIsobands (matrix = this.matrix) {
     const n = this.resolution.columnCount
     const m = this.resolution.rowCount
 
@@ -144,12 +152,6 @@ export class Contours {
     num = num / 10.0 + 0.5 // Translate to 0 -> 1
     if (num > 1 || num < 0) return this._randomBm() // resample between 0 and 1
     return num
-  }
-
-  get matrixArea() {
-    if (!this.resolution) return 0
-
-    return this.resolution.cellCount
   }
 
   _initMatrix () {
@@ -208,14 +210,8 @@ export class Contours {
 
     }
 
-    // console.log(initValues())
-
     matrices.empty = initValues // initValues
 
     return matrices
-  }
-
-  getMatrix () {
-    return this._matrix
   }
 }
