@@ -1,7 +1,7 @@
 /**
  * The matrix of cells that span the sketch client.
  */
-export class Plat {
+export class Grid {
   constructor (size, resolution) {
     this.size = size
     this.resolution = resolution

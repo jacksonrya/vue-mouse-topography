@@ -3,7 +3,7 @@ import fill from 'lodash-es/fill.js'
 import P5 from 'p5'
 
 import { Contours, THRESHOLD_OPTIONS } from './Contours'
-import { Plat } from './Plat'
+import { Grid } from './Grid'
 import { Resolution } from './Resolution'
 
 const DEBUG = false
@@ -26,7 +26,7 @@ export default class {
     }, canvasId)
 
     this.resolution = new Resolution(dimensions.width / simplify, dimensions.height / simplify) // The resolution of the structured grid.
-    this._plat = new Plat(this.dimensions, this.resolution)
+    this.grid = new Grid(this.dimensions, this.resolution)
 
     this.topography = new Contours(this.resolution, this.dimensions, preset) // The topography...
   }
@@ -70,8 +70,8 @@ export default class {
     })
   }
 
-  get plat () {
-    return this._plat
+  get grid() {
+    return this._grid
   }
 
   /**
@@ -79,8 +79,8 @@ export default class {
    * @param {Object} mousePosition Coordinates of the mouse.
    * @returns {Object} Coordinates of the cell.
    */
-  getCell (mousePosition) {
-    return this.plat.getCell(mousePosition)
+  getCell(mousePosition) {
+    return this.grid.getCell(mousePosition)
   }
 
   addPoint () {
