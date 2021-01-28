@@ -3589,7 +3589,7 @@ __vue_render__._withStripped = true;
 function install(Vue) {
   if (install.installed) return;
   install.installed = true;
-  Vue.component('VueMouseTopography', vueMouseTopography);
+  Vue.component('vue-mouse-topography', vueMouseTopography);
 }
 
 // Create module definition for Vue.use()
