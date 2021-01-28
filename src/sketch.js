@@ -250,7 +250,7 @@ export default class {
     }
     const stroke = color => p5.stroke(STYLE_CHOROPLETH ? '#4b4b4b' : color)
 
-    const contours = this.topography.getIsobands()
+    const contours = this.topography.isobands
 
     contours.forEach((contour, i, contours) => {
       const color = p5.lerpColor(p5.color(...START_COLOR), p5.color(...END_COLOR), i / contours.length)

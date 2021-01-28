@@ -58,6 +58,10 @@ export class Contours {
     return Math.ceil(this.max / CONTOUR_INTERVAL)
   }
 
+  get isobands() {
+    return this._getIsobands(this.matrix)
+  }
+
   _getMatrixIndex (x, y) { // TODO move to matrix class
     return Math.floor((y * this.resolution.columnCount) + x)
   }
@@ -132,7 +136,7 @@ export class Contours {
     })
   }
 
-  getIsobands (matrix = this.matrix) {
+  _getIsobands (matrix) {
     const n = this.resolution.columnCount
     const m = this.resolution.rowCount
 
