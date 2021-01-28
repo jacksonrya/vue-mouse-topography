@@ -26,7 +26,7 @@ export default class {
     }, canvasId)
 
     this.resolution = new Resolution(dimensions.width / simplify, dimensions.height / simplify) // The resolution of the structured grid.
-    this.grid = new Grid(this.dimensions, this.resolution)
+    this._grid = new Grid(this.dimensions, this.resolution)
 
     this.topography = new Contours(this.resolution, this.dimensions, preset) // The topography...
   }
