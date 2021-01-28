@@ -1,12 +1,12 @@
 'use strict'
 
-import vueMouseTopography from './vue-mouse-topography.vue'
+import VueMouseTopography from './vue-mouse-topography.vue'
 
 // Declare install function executed by Vue.use()
 export function install(Vue) {
   if (install.installed) return;
   install.installed = true;
-  Vue.component('vue-mouse-topography', vueMouseTopography);
+  Vue.component('vue-mouse-topography', VueMouseTopography);
 }
 
 // Create module definition for Vue.use()
@@ -24,5 +24,5 @@ if (GlobalVue) {
 }
 
 // To allow use as module (npm/webpack/etc.) export vueMouseTopography
-export default vueMouseTopography;
+export default VueMouseTopography;
 
