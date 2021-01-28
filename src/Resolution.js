@@ -15,7 +15,7 @@ export class Resolution {
     return Math.ceil(this.height)
   }
 
-  get size () {
+  get resolutionSize () {
     return {
       width: this.columnCount,
       height: this.rowCount,

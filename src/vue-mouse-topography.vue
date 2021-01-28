@@ -99,7 +99,7 @@ export default {
   mounted () {
     const topographyConfig = {
       canvasId: this.sketchId,
-      dimensions: { width: this.width, height: this.height },
+      canvasSize: { width: this.width, height: this.height },
       simplify: this.simplify,
     }
 
@@ -137,7 +137,7 @@ export default {
 
     updateMouseCell () {
       this.prevMouseCell = this.mouseCell
-      this.mouseCell = this.sketch.getCell(this.mousePosition)
+      this.mouseCell = this.sketch.getContainingCell(this.mousePosition)
 
       if (this.mouseCellChanged(this.prevMouseCell, this.mouseCell)) {
         this.restingPointerStartTime = new Date().getTime()

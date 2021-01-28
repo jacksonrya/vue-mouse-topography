@@ -24,9 +24,8 @@ const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line
  *
  */
 export class Contours {
-  constructor (resolution, viewport, preset) {
+  constructor (resolution, preset) {
     this.resolution = resolution
-    this.viewport = viewport
 
     this.min = Infinity
     this.max = -Infinity
@@ -39,6 +38,16 @@ export class Contours {
     return new this(resolution)
   }
 
+  get matrix() {
+    return this._matrix
+  }
+
+  get matrixArea() {
+    if (!this.resolution) return 0
+
+    return this.resolution.cellCount
+  }
+
   get zRange () {
     return Math.ceil(this.max - this.min)
   }
@@ -46,6 +55,10 @@ export class Contours {
   // The number of sorting buckets to accomodate all z-axis values.
   get bucketCount () {
     return Math.ceil(this.max / CONTOUR_INTERVAL)
+  }
+
+  get isobands() {
+    return this._getIsobands(this.matrix)
   }
 
   _getMatrixIndex (x, y) { // TODO move to matrix class
@@ -110,8 +123,6 @@ export class Contours {
       return this._getMatrixValue(i)
     })
 
-    // console.log(x, y, this._getMatrixIndex(x, y))
-
     const currMatrixValue = this._getMatrixValue(this._getMatrixIndex(x, y))
     // console.log([currMatrixValue, ...neighbors])
     const newMatrixValue = [ currMatrixValue, ...neighbors ].reduce((prev, curr) => prev + curr) / 9
@@ -124,7 +135,7 @@ export class Contours {
     })
   }
 
-  getIsobands (matrix = this.getMatrix()) {
+  _getIsobands (matrix) {
     const n = this.resolution.columnCount
     const m = this.resolution.rowCount
 
@@ -144,12 +155,6 @@ export class Contours {
     num = num / 10.0 + 0.5 // Translate to 0 -> 1
     if (num > 1 || num < 0) return this._randomBm() // resample between 0 and 1
     return num
-  }
-
-  get matrixArea() {
-    if (!this.resolution) return 0
-
-    return this.resolution.cellCount
   }
 
   _initMatrix () {
@@ -208,14 +213,8 @@ export class Contours {
 
     }
 
-    // console.log(initValues())
-
     matrices.empty = initValues // initValues
 
     return matrices
-  }
-
-  getMatrix () {
-    return this._matrix
   }
 }
