@@ -13,22 +13,22 @@ const DRAW_INTERACTVE_DOM = DEBUG && false
 export default class {
   constructor ({
     canvasId = 'p5-canvas',
-    dimensions = undefined,
+    canvasSize = undefined,
     simplify = 30,
     preset = THRESHOLD_OPTIONS.EMPTY, 
   }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
-    this.dimensions = dimensions // The screen size of the topography container.
+    this.canvasSize = canvasSize // The screen size of the topography container.
 
     this.p5 = new P5(p5 => { // The sketch.
       p5.setup = this.setup(p5)
       p5.draw = this.draw(p5)
     }, canvasId)
 
-    this.resolution = new Resolution(dimensions.width / simplify, dimensions.height / simplify) // The resolution of the structured grid.
-    this._grid = new Grid(this.dimensions, this.resolution)
+    this.resolution = new Resolution(canvasSize.width / simplify, canvasSize.height / simplify) // The resolution of the structured grid.
+    this._grid = new Grid(this.canvasSize, this.resolution)
 
-    this.topography = new Contours(this.resolution, this.dimensions, preset) // The topography...
+    this.topography = new Contours(this.resolution, this.canvasSize, preset) // The topography...
   }
 
   /**
@@ -37,10 +37,10 @@ export default class {
    * @returns {TopographySketch}
    */
   static getGoldsteinInstance ({
-    canvasId, dimensions, simplify, 
+    canvasId, canvasSize, simplify, 
   }) {
     return new this({
-      canvasId, dimensions, simplify, preset: THRESHOLD_OPTIONS.GOLDSTEIN, 
+      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.GOLDSTEIN, 
     })
   }
 
@@ -50,10 +50,10 @@ export default class {
    * @returns {TopographySketch}
    */
   static getRandomInstance ({
-    canvasId, dimensions, simplify, 
+    canvasId, canvasSize, simplify, 
   }) {
     return new this({
-      canvasId, dimensions, simplify, preset: THRESHOLD_OPTIONS.RANDOM, 
+      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.RANDOM, 
     })
   }
 
@@ -63,10 +63,10 @@ export default class {
    * @returns {TopographySketch}
    */
   static getEmptyInstance ({
-    canvasId, dimensions, simplify, 
+    canvasId, canvasSize, simplify, 
   }) {
     return new this({
-      canvasId, dimensions, simplify, preset: THRESHOLD_OPTIONS.EMPTY, 
+      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.EMPTY, 
     })
   }
 
@@ -89,7 +89,7 @@ export default class {
 
   setup (p5) {
     return () => {
-      p5.createCanvas(this.dimensions.width, this.dimensions.height)
+      p5.createCanvas(this.canvasSize.width, this.canvasSize.height)
       p5.noLoop()
       p5.colorMode(p5.HSB)
       this.resetStrokeWeight()
@@ -151,7 +151,7 @@ export default class {
     // TODO: add distributed changes
     let x
     for (let i = 0; i < this.resolution.columnCount; i++) {
-      if (mousePosition.x < (this.dimensions.width / this.resolution.columnCount * i)) {
+      if (mousePosition.x < (this.canvasSize.width / this.resolution.columnCount * i)) {
         x = i - 1
         break
       }
@@ -159,7 +159,7 @@ export default class {
 
     let y
     for (let i = 0; i < this.resolution.rowCount; i++) {
-      if (mousePosition.y < (this.dimensions.height / this.resolution.rowCount * i)) {
+      if (mousePosition.y < (this.canvasSize.height / this.resolution.rowCount * i)) {
         y = i - 1
         break
       }
@@ -192,8 +192,8 @@ export default class {
 
   getCanvasCoordinate (matrixX, matrixY) {
     return {
-      x: Math.floor(this.p5.map(matrixX, 0, this.resolution.columnCount, 0, this.dimensions.width)),
-      y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.dimensions.height)),
+      x: Math.floor(this.p5.map(matrixX, 0, this.resolution.columnCount, 0, this.canvasSize.width)),
+      y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.canvasSize.height)),
     }
   }
 

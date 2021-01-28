@@ -99,7 +99,7 @@ export default {
   mounted () {
     const topographyConfig = {
       canvasId: this.sketchId,
-      dimensions: { width: this.width, height: this.height },
+      canvasSize: { width: this.width, height: this.height },
       simplify: this.simplify,
     }
 
