@@ -19,7 +19,7 @@
   "files": [
     "dist/*"
   ],
-  "browser": "dist/vue-mouse-topography.esm.js",
+  "browser": "dist/vue-mouse-topography.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "rollup --config build/rollup.config.js",
