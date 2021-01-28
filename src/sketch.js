@@ -181,20 +181,20 @@ class TopographySketch {
     if (DRAW_INTERACTVE_DOM) this.drawInteractiveDOM()
   }
 
-  drawInteractiveDOM () {
-    const els = document.getElementsByClassName('topography-block')
-
-    els.forEach(el => {
-      const rect = el.getBoundingClientRect()
-      const {
-        x, y, width, height, 
-      } = rect
-
-      const padding = 40
-
-      this.p5.rect(x + window.scrollX - padding, y + window.scrollY - padding, width + padding * 2, height + padding * 2)
-    })
-  }
+  // drawInteractiveDOM () {
+  //   const els = document.getElementsByClassName('topography-block')
+  //
+  //   els.forEach(el => {
+  //     const rect = el.getBoundingClientRect()
+  //     const {
+  //       x, y, width, height, 
+  //     } = rect
+  //
+  //     const padding = 40
+  //
+  //     this.p5.rect(x + window.scrollX - padding, y + window.scrollY - padding, width + padding * 2, height + padding * 2)
+  //   })
+  // }
 
   update (mousePosition, force = 0) {
     const { x, y } = mousePosition
