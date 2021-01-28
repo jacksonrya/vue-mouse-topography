@@ -4,11 +4,10 @@ import P5 from 'p5'
 
 import { Contours, THRESHOLD_OPTIONS } from './Contours'
 import { Grid } from './Grid'
-import { Resolution } from './Resolution'
 
 const DEBUG = false
-const DRAW_GRID = DEBUG && false
-const DRAW_INTERACTVE_DOM = DEBUG && false
+const DRAW_GRID = DEBUG
+const DRAW_INTERACTVE_DOM = DEBUG
 
 export default class {
   constructor ({
@@ -18,17 +17,17 @@ export default class {
     preset = THRESHOLD_OPTIONS.EMPTY, 
   }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
-    this.canvasSize = canvasSize // The screen size of the topography container.
+    this.canvasSize = canvasSize // The screen size of the sketch.
 
     this.p5 = new P5(p5 => { // The sketch.
-      p5.setup = this.setup(p5)
-      p5.draw = this.draw(p5)
+      p5.setup = this._setup(p5)
+      p5.draw = this._draw(p5)
     }, canvasId)
 
-    this.resolution = new Resolution(canvasSize.width / simplify, canvasSize.height / simplify) // The resolution of the structured grid.
-    this._grid = new Grid(this.canvasSize, this.resolution)
+    // The grid representing the rastered resolution of the canvas
+    this.grid = Grid.simplified(this.canvasSize, simplify)
 
-    this.topography = new Contours(this.resolution, this.canvasSize, preset) // The topography...
+    this.topography = new Contours(this.grid, preset) // The topography...
   }
 
   /**
@@ -70,8 +69,11 @@ export default class {
     })
   }
 
-  get grid() {
-    return this._grid
+  update (mousePosition, force = 0) {
+    const { x, y } = mousePosition
+
+    this._updateMatrix({ x, y }, force)
+    this.p5.redraw()
   }
 
   /**
@@ -79,30 +81,30 @@ export default class {
    * @param {Object} mousePosition Coordinates of the mouse.
    * @returns {Object} Coordinates of the cell.
    */
-  getCell(mousePosition) {
-    return this.grid.getCell(mousePosition)
+  getContainingCell(mousePosition) {
+    return this.grid.getContainingCellCoordinates(mousePosition)
   }
 
   addPoint () {
     console.log('Adding point not yet implemented.')
   }
 
-  setup (p5) {
+  _setup (p5) {
     return () => {
       p5.createCanvas(this.canvasSize.width, this.canvasSize.height)
       p5.noLoop()
       p5.colorMode(p5.HSB)
-      this.resetStrokeWeight()
+      this._resetStrokeWeight()
     }
   }
 
-  draw (p5) {
+  _draw (p5) {
     return () => {
       p5.push()
 
-      this.drawBackground()
-      this.drawTopography()
-      this.drawForeground()
+      this._drawBackground()
+      this._drawTopography()
+      this._drawForeground()
 
       p5.pop()
     }
@@ -111,17 +113,16 @@ export default class {
   /**
    * Draws sketch elements that render below (z-index) the topography.
    */
-  drawBackground () {
+  _drawBackground () {
     this.p5.background('white')
-
-    if (DRAW_GRID) this.drawGrid()
   }
 
   /**
    * Draws sketch elements that render above (z-index) the topography.
    */
-  drawForeground () {
-    if (DRAW_INTERACTVE_DOM) this.drawInteractiveDOM()
+  _drawForeground () {
+    if (DRAW_GRID) this._drawGrid()
+    // if (DRAW_INTERACTVE_DOM) this.drawInteractiveDOM()
   }
 
   // drawInteractiveDOM () {
@@ -139,27 +140,20 @@ export default class {
   //   })
   // }
 
-  update (mousePosition, force = 0) {
-    const { x, y } = mousePosition
-
-    this._updateMatrix({ x, y }, force)
-    this.p5.redraw()
-  }
-
   _updateMatrix (mousePosition, force) {
     // TODO: use better logic to find the closest gridpoint(or center) and change it there
     // TODO: add distributed changes
     let x
-    for (let i = 0; i < this.resolution.columnCount; i++) {
-      if (mousePosition.x < (this.canvasSize.width / this.resolution.columnCount * i)) {
+    for (let i = 0; i < this.grid.columnCount; i++) {
+      if (mousePosition.x < (this.canvasSize.width / this.grid.columnCount * i)) {
         x = i - 1
         break
       }
     }
 
     let y
-    for (let i = 0; i < this.resolution.rowCount; i++) {
-      if (mousePosition.y < (this.canvasSize.height / this.resolution.rowCount * i)) {
+    for (let i = 0; i < this.grid.rowCount; i++) {
+      if (mousePosition.y < (this.canvasSize.height / this.grid.rowCount * i)) {
         y = i - 1
         break
       }
@@ -168,7 +162,16 @@ export default class {
     this.topography.raise({ x, y }, force)
   }
 
-  makeMultipolygon (mp) {
+  _makePolygon (polygon) {
+    polygon.forEach(coor => {
+      const [ x, y ] = coor
+      const canvasCoor = this._getCanvasCoordinate(x, y)
+
+      this.p5.vertex(canvasCoor.x, canvasCoor.y)
+    })
+  }
+
+  _makeMultipolygon (mp) {
     const p5 = this.p5
 
     mp.forEach(polygon => {
@@ -176,12 +179,12 @@ export default class {
 
       p5.beginShape()
 
-      this.makePolygon(positiveSpace)
+      this._makePolygon(positiveSpace)
 
       polygon.forEach(negativeSpace => {
         p5.beginContour()
 
-        this.makePolygon(negativeSpace)
+        this._makePolygon(negativeSpace)
 
         p5.endContour()
       })
@@ -190,45 +193,39 @@ export default class {
     })
   }
 
-  getCanvasCoordinate (matrixX, matrixY) {
+  _getCanvasCoordinate (matrixX, matrixY) {
     return {
-      x: Math.floor(this.p5.map(matrixX, 0, this.resolution.columnCount, 0, this.canvasSize.width)),
-      y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.canvasSize.height)),
+      x: Math.floor(this.p5.map(matrixX, 0, this.grid.columnCount, 0, this.canvasSize.width)),
+      y: Math.floor(this.p5.map(matrixY, 0, this.grid.rowCount, 0, this.canvasSize.height)),
     }
   }
 
-  makePolygon (polygon) {
-    polygon.forEach(coor => {
-      const [ x, y ] = coor
-      const canvasCoor = this.getCanvasCoordinate(x, y)
-
-      this.p5.vertex(canvasCoor.x, canvasCoor.y)
-    })
-  }
-
-  makeMatrix (matrix) {
+  _makeMatrix (matrix) {
     matrix.forEach((z, i) => {
-      const x = i % this.resolution.columnCount
-      const y = i / this.resolution.columnCount
+      const x = i % this.grid.columnCount
+      const y = i / this.grid.columnCount
 
-      const canvasCoor = this.getCanvasCoordinate(x, y)
+      const canvasCoor = this._getCanvasCoordinate(x, y)
 
       this.p5.circle(canvasCoor.x, canvasCoor.y, z)
     })
   }
 
-  drawGrid () {
+  /**
+   * Draws a dotted grid. One dot to denote the corner intersections of grid cells.
+   */
+  _drawGrid () {
     this.p5.stroke(0, 0, 90)
     this.p5.fill(0, 0, 90)
-    this.makeMatrix(fill(new Array(this.topography.matrixArea), 2))
+    this._makeMatrix(fill(new Array(this.topography.matrixArea), 2))
   }
 
-  resetStrokeWeight () {
+  _resetStrokeWeight () {
     const defaultStroke = 0.2
     this.p5.strokeWeight(defaultStroke)
   }
 
-  drawTopography () {
+  _drawTopography () {
     const p5 = this.p5
 
     const STYLE_CHOROPLETH = false
@@ -256,7 +253,7 @@ export default class {
       const color = p5.lerpColor(p5.color(...START_COLOR), p5.color(...END_COLOR), i / contours.length)
       fill(color)
       stroke(color)
-      this.resetStrokeWeight()
+      this._resetStrokeWeight()
 
       if (DRAW_GRID && i === 0) {
         p5.stroke('black') // Removes outer border
@@ -266,13 +263,13 @@ export default class {
       if (i === 0) p5.noStroke()
       // if (i === 1) p5.strokeWeight(1)
 
-      this.makeMultipolygon(contour.coordinates || contour.geometry)
+      this._makeMultipolygon(contour.coordinates || contour.geometry)
     })
 
     if (DRAW_MATRIX) {
       this.p5.stroke('black')
       this.p5.fill('black')
-      this.makeMatrix(this.topography.matrix)
+      this._makeMatrix(this.topography.matrix)
     }
   }
 }

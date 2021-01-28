@@ -1,27 +1,52 @@
+import { Resolution } from './Resolution'
 /**
  * The matrix of cells that span the sketch client.
  */
-export class Grid {
-  constructor (size, resolution) {
-    this.size = size
-    this.resolution = resolution
+export class Grid extends Resolution {
+  constructor(dimensions, resolution) {
+    super(resolution.width, resolution.height)
+    this._dimensions = dimensions
   }
 
-  get cellSize () {
+  static simplified(dimensions, simplificationCoefficient) {
+    return new this(dimensions, { width: dimensions.width / simplificationCoefficient, height: dimensions.height / simplificationCoefficient })
+  }
+
+  // fromCellDimensions({
+  //   gridWidth,
+  //   gridHeight,
+  //   cellWidth,
+  //   cellHeight,
+  // }) {
+  //   super(gridWidth, gridHeight)
+  //   this.size = {
+  //     width: cellWidth * gridWidth,
+  //     height: cellHeight * gridHeight,
+  //   }
+  // }
+  
+  get dimensions() {
+    return this._dimensions
+  }
+
+  get cellDimensions() {
     return {
-      width: this.size.width / this.resolution.columnCount,
-      height: this.size.height / this.resolution.rowCount,
+      width: this.dimensions.width / this.columnCount,
+      height: this.dimensions.height / this.rowCount,
     }
   }
 
-  getCell (mousePosition) {
-    if (!mousePosition || !mousePosition.x || !mousePosition.y) {
+  /**
+   * Returns the coordinates of the cell that contains the given point.
+   */
+  getContainingCellCoordinates({ x, y } = {}) {
+    if (x === undefined || y === undefined || !x || !y) {
       return {}
     }
 
     return {
-      x: Math.floor(mousePosition.x / this.cellSize.width),
-      y: Math.floor(mousePosition.y / this.cellSize.height),
+      x: Math.floor(x / this.cellDimensions.width),
+      y: Math.floor(y / this.cellDimensions.height),
     }
   }
 }

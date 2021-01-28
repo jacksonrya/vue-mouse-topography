@@ -24,9 +24,8 @@ const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line
  *
  */
 export class Contours {
-  constructor (resolution, viewport, preset) {
+  constructor (resolution, preset) {
     this.resolution = resolution
-    this.viewport = viewport
 
     this.min = Infinity
     this.max = -Infinity
