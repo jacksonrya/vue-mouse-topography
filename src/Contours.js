@@ -7,7 +7,6 @@ export const THRESHOLD_OPTIONS = {
   EMPTY: 'empty',
   RANDOM: 'random',
   GRADIENT: 'gradient',
-  GOLDSTEIN: 'goldstein',
 }
 
 // List of values that seperate contour buckets. The z-axis values at which contours lines are drawn.
@@ -15,7 +14,6 @@ const THRESHOLDS = {
   empty: { threshold: function () { return range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
   random: { threshold: function () { return range(0, 100, 10) } },
   gradient: { threshold: function () { return range(0, this.matrixArea, this.matrixArea / 10) } },
-  goldstein: { threshold: function () { return range(2, 21).map(p => Math.pow(2, p)) } },
 }
 
 const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line.
@@ -251,26 +249,6 @@ export class Contours {
 
         return values
       },
-      goldstein: () => {
-        const values = initValues()
-
-        function goldsteinPrice (x, y) {
-          return (1 + Math.pow(x + y + 1, 2) * (19 - 14 * x + 3 * x * x - 14 * y + 6 * x * x + 3 * y * y)) *
-            (30 + Math.pow(2 * x - 3 * y, 2) * (18 - 32 * x + 12 * x * x + 48 * y - 36 * x * y + 27 * y * y))
-        }
-
-        // Populate a grid of n×m values where -2 ≤ x ≤ 2 and -2 ≤ y ≤ 1.
-        const n = this.resolution.columnCount
-        const m = this.resolution.rowCount
-        for (let j = 0.5, k = 0; j < m; ++j) {
-          for (let i = 0.5; i < n; ++i, ++k) {
-            values[k] = goldsteinPrice(i / n * 4 - 2, 1 - j / m * 3)
-          }
-        }
-
-        return values
-      },
-
     }
 
     matrices.empty = initValues // initValues
