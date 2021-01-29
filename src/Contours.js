@@ -26,8 +26,16 @@ export class Contours {
     this.min = Infinity
     this.max = -Infinity
 
-    this._matrix = this._initMatrix()[preset]()
-    this._threshold = THRESHOLDS[preset].threshold
+    this.preset = preset
+
+    this._matrix = undefined
+    this._threshold = undefined
+    this._init()
+  }
+
+  _init() {
+    this._matrix = this._initMatrix()[this.preset]()
+    this._threshold = THRESHOLDS[this.preset].threshold
   }
 
   static random (resolution) {
@@ -60,6 +68,15 @@ export class Contours {
 
   get isobands() {
     return this._getIsobands(this.matrix)
+  }
+
+  updateResolution(resolution) {
+    this.resolution = resolution
+    this._init()
+  }
+
+  resetMatrix() {
+
   }
 
   _getMatrixIndex (x, y) { // TODO move to matrix class
