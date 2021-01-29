@@ -8,7 +8,14 @@ const DEBUG = false
 const DRAW_GRID = DEBUG
 
 /**
- * Manages the drawing of topography.
+ * A p5 sketch that draws topographic contour lines.
+ *
+ * @param {string} canvasId - The id given to the canvas HTML element.
+ * @param {Object} canvasSize - The dimensions of the canvas.
+ * @param {number} canvasSize.width
+ * @param {number} canvasSize.height
+ * @param {number} scale - The scale of each cell within the contouring grid (unit pixels).
+ * @param {string} preset - A preset of values used to initialize the topography z-values.
  */
 export default class {
   constructor ({
@@ -17,8 +24,8 @@ export default class {
     scale = 30,
     preset = THRESHOLD_OPTIONS.EMPTY, 
   }) {
-    this.canvasId = canvasId // The element's id for the p5 sketch.
-    this.canvasSize = canvasSize // The screen size of the sketch.
+    this.canvasId = canvasId
+    this.canvasSize = canvasSize
 
     this.p5 = new P5(p5 => { // The sketch.
       p5.setup = this._setup(p5)
@@ -36,6 +43,7 @@ export default class {
 
   /**
    * Returns a sketch with random topography.
+   *
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */

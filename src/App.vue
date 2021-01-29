@@ -41,6 +41,12 @@
       <button @click="randomize">
         randomize
       </button>
+
+      <div>Approximate isoband cell size</div>
+      <div
+        class="scale-sample"
+        :style="{width: `${controls.scale.value}px`, height: `${controls.scale.value}px`}"
+      />
     </table>
   </div>
 </template>
@@ -52,7 +58,7 @@ const CONTROLS = {
   scale: {
     min: 1,
     max: 100,
-    units: null,
+    units: 'px',
     value: 20,
   },
   ping: {
@@ -107,5 +113,10 @@ export default {
   border: 5px solid black;
   width: 50%;
   height: 50%;
+}
+
+.scale-sample {
+  border: 1px solid black;
+  background-color: grey;
 }
 </style>
