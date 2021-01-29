@@ -9,15 +9,25 @@ const DEBUG = false
 const DRAW_GRID = DEBUG
 const DRAW_INTERACTVE_DOM = DEBUG
 
+/**
+ * A p5 sketch that draws topographic contour lines.
+ *
+ * @param {string} canvasId - The id given to the canvas HTML element.
+ * @param {Object} canvasSize - The dimensions of the canvas.
+ * @param {number} canvasSize.width
+ * @param {number} canvasSize.height
+ * @param {number} scale - The scale of each cell within the contouring grid (unit pixels).
+ * @param {string} preset - A preset of values used to initialize the topography z-values.
+ */
 export default class {
   constructor ({
     canvasId = 'p5-canvas',
     canvasSize = undefined,
-    simplify = 30,
+    scale = 30,
     preset = THRESHOLD_OPTIONS.EMPTY, 
   }) {
-    this.canvasId = canvasId // The element's id for the p5 sketch.
-    this.canvasSize = canvasSize // The screen size of the sketch.
+    this.canvasId = canvasId
+    this.canvasSize = canvasSize
 
     this.p5 = new P5(p5 => { // The sketch.
       p5.setup = this._setup(p5)
@@ -27,7 +37,7 @@ export default class {
     this.preset = preset
 
     // The grid representing the rastered resolution of the canvas
-    this.grid = Grid.simplified(this.canvasSize, simplify)
+    this.grid = Grid.simplified(this.canvasSize, scale)
 
     this.topography = new Contours(this.grid, this.preset) // The topography...
   }
@@ -44,10 +54,10 @@ export default class {
    * @returns {TopographySketch}
    */
   static getGoldsteinInstance ({
-    canvasId, canvasSize, simplify, 
+    canvasId, canvasSize, scale, 
   }) {
     return new this({
-      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.GOLDSTEIN, 
+      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.GOLDSTEIN, 
     })
   }
 
@@ -57,10 +67,10 @@ export default class {
    * @returns {TopographySketch}
    */
   static getRandomInstance ({
-    canvasId, canvasSize, simplify, 
+    canvasId, canvasSize, scale, 
   }) {
     return new this({
-      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.RANDOM, 
+      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.RANDOM, 
     })
   }
 
@@ -70,16 +80,16 @@ export default class {
    * @returns {TopographySketch}
    */
   static getEmptyInstance ({
-    canvasId, canvasSize, simplify, 
+    canvasId, canvasSize, scale, 
   }) {
     return new this({
-      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.EMPTY, 
+      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.EMPTY, 
     })
   }
 
-  reset({ simplify }) {
-    if (simplify) {
-      this.updateSimplification(simplify)
+  reset({ scale }) {
+    if (scale) {
+      this.updateSimplification(scale)
     } else {
       this.topography.reset()
     }

@@ -17,7 +17,7 @@ import isEqual from 'lodash-es/isEqual.js'
 
 import TopographySketch from './sketch'
 
-const DEFAULT_SIMPLIFY_COEFFICIENT = 20 // Degree of polygon simplification
+const DEFAULT_SCALE_COEFFICIENT = 20 // Degree of polygon simplification
 const DEFAULT_PING_TIME = 15 // Amount of time(ms) between updates, in milliseconds.
 const DEFAULT_FORCE = 8 // The amount of 'z' added to a point during mouse movement.
 const DEFAULT_DECAY_TIME = 2000 // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
@@ -28,11 +28,11 @@ export default {
   name: 'VueMouseTopography',
   props: {
     // Degree to which simplification is applied to the contours.
-    simplify: {
+    scale: {
       type: Number,
       required: false,
       default () {
-        return DEFAULT_SIMPLIFY_COEFFICIENT
+        return DEFAULT_SCALE_COEFFICIENT
       },
     },
 
@@ -100,7 +100,7 @@ export default {
     const topographyConfig = {
       canvasId: this.sketchId,
       canvasSize: { width: this.width, height: this.height },
-      simplify: this.simplify,
+      scale: this.scale,
     }
 
     this.sketch = TopographySketch.getEmptyInstance(topographyConfig)
@@ -152,7 +152,7 @@ export default {
     },
 
     reset () {
-      this.sketch.reset({ simplify: this.simplify })
+      this.sketch.reset({ scale: this.scale })
     },
 
     randomize() {
