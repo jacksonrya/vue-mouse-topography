@@ -24,10 +24,18 @@ export default class {
       p5.draw = this._draw(p5)
     }, canvasId)
 
+    this.preset = preset
+
     // The grid representing the rastered resolution of the canvas
     this.grid = Grid.simplified(this.canvasSize, simplify)
 
-    this.topography = new Contours(this.grid, preset) // The topography...
+    this.topography = new Contours(this.grid, this.preset) // The topography...
+  }
+
+  updateSimplification(k) {
+    this.grid = Grid.simplified(this.canvasSize, k)
+
+    this.topography = new Contours(this.grid, this.preset) // The topography...
   }
 
   /**
@@ -69,8 +77,12 @@ export default class {
     })
   }
 
-  reset() {
-    this.topography.reset()
+  reset({ simplify }) {
+    if (simplify) {
+      this.updateSimplification(simplify)
+    } else {
+      this.topography.reset()
+    }
     this.p5.redraw()
   }
 

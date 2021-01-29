@@ -152,7 +152,7 @@ export default {
     },
 
     reset () {
-      this.sketch.reset()
+      this.sketch.reset({ simplify: this.simplify })
     },
 
     randomize() {
