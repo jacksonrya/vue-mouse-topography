@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import * as B from 'array-blur'
 import * as d3 from 'd3-contour'
 import fill from 'lodash-es/fill.js'
 import range from 'lodash-es/range.js'
@@ -77,10 +78,14 @@ export class Contours {
     return Math.floor((y * this.resolution.width) + x)
   }
 
+  _setMatrixValue(i, v) {
+    this._matrix[i] = v
+  }
+
   _addToMatrixValue(i, z) {
     if (z === 0) return
 
-    this._matrix[i] += z
+    this._setMatrixValue(i, this._matrix[i] + z)
   }
 
   _getMatrixValue (i) {
@@ -100,12 +105,8 @@ export class Contours {
   }
 
   raise ({ x, y }, zDelta = 100, density = 4) {
-    // calculate distances to closest nodes
     const pos = this._getMatrixIndex(x, y)
-    // this._matrix[pos] += zDelta
     this._addToMatrixValue(pos, zDelta)
-    // TODO  raise values of neighbors at a fraction of zDelta
-    // antialias with new values
 
     // Raises the the surrounding neighbors of the given cell by a constant fraction
     // of the center(given) cell.
@@ -122,12 +123,7 @@ export class Contours {
       }
     }
 
-    // Anti-aliasing creates a gradient brush effect. 'Raising' a point raises surrounding
-    // points as well.
-    // this.antialias({ x, y })
-
-    // gaussian
-
+    this._blur({ x, y })
 
     const z = this._matrix[pos]
 
@@ -135,8 +131,7 @@ export class Contours {
     if (z > this.max) this.max = z
   }
 
-  // ?? This helps make fluid diagonals drawn, but doesn't spread the force effect
-  antialias ({ x, y }, iterations = 0) {
+  _blur({ x, y }, iterations = 0) {
     const ITERATION_CAP = 1 // To ensure decent performance
     if (!x || !y) return
     if (iterations === ITERATION_CAP) return
@@ -146,31 +141,23 @@ export class Contours {
     // to the given point
     const neighborCoors = []
     const neighborIndexes = []
-    for (let i = -2; i <= 2; i++) {
-      for (let j = -2; j <= 2; j++) {
-        if (i !== 0 || j !== 0) {
-          const coor = [ x + j, y + i ]
-          neighborCoors.push(coor)
-          neighborIndexes.push(this._getMatrixIndex(...coor))
-        }
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        const coor = [ x + j, y + i ]
+        neighborCoors.push(coor)
+        neighborIndexes.push(this._getMatrixIndex(...coor))
       }
     }
 
-
-    const neighbors = neighborIndexes.map(i => {
+    const preValues = neighborIndexes.map(i => {
       return this._getMatrixValue(i)
     })
 
-    const currMatrixValue = this._getMatrixValue(this._getMatrixIndex(x, y))
-    // Get average off all cells
-    const newMatrixValue = [ currMatrixValue, ...neighbors ].reduce((prev, curr) => prev + curr) / 9
-    
-    // TODO: don't get matrix index of current cell twice
-    // this._addToMatrixValue(this._getMatrixIndex(x, y), (newMatrixValue || 0)) 
+    const blurredValues = B.blur().radius(2).width(3)(preValues)
 
-    // neighborCoors.forEach(coor => {
-    //   this.antialias(coor, iterations + 1)
-    // })
+    neighborIndexes.forEach((cellPosition, i) => {
+      this._setMatrixValue(cellPosition, blurredValues[i])
+    })
   }
 
   /**
