@@ -3,18 +3,10 @@ import * as d3 from 'd3-contour'
 import fill from 'lodash-es/fill.js'
 import range from 'lodash-es/range.js'
 
-export const THRESHOLD_OPTIONS = {
-  EMPTY: 'empty',
-  RANDOM: 'random',
-  GRADIENT: 'gradient',
-}
+export const THRESHOLD_OPTIONS = { EMPTY: 'empty' }
 
 // List of values that seperate contour buckets. The z-axis values at which contours lines are drawn.
-const THRESHOLDS = {
-  empty: { threshold: function () { return range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
-  random: { threshold: function () { return range(0, 100, 10) } },
-  gradient: { threshold: function () { return range(0, this.matrixArea, this.matrixArea / 10) } },
-}
+const THRESHOLDS = {}
 
 const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line.
 
@@ -22,7 +14,7 @@ const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line
  *
  */
 export class Contours {
-  constructor (resolution, preset) {
+  constructor (resolution, preset = THRESHOLD_OPTIONS.EMPTY) {
     this.resolution = resolution
 
     this.min = Infinity
@@ -37,7 +29,7 @@ export class Contours {
 
   _init() {
     this._matrix = this._initMatrix()[this.preset]()
-    this._threshold = THRESHOLDS[this.preset].threshold
+    this._threshold = THRESHOLDS[this.preset]
   }
 
   static random (resolution) {
@@ -85,7 +77,9 @@ export class Contours {
     return Math.floor((y * this.resolution.columnCount) + x)
   }
 
-  _addToMatrixValue (i, z) {
+  _addToMatrixValue(i, z) {
+    if (z === 0) return
+
     this._matrix[i] += z
   }
 
@@ -113,6 +107,13 @@ export class Contours {
     // TODO  raise values of neighbors at a fraction of zDelta
     // antialias with new values
 
+    // Raises the the surrounding neighbors of the given cell by a constant fraction
+    // of the center(given) cell.
+    //                         
+    //   0.25 0.25 0.25               
+    //   0.25 1.00 0.25            
+    //   0.25 0.25 0.25            
+    //                         
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         if (i !== 0 || j !== 0) {
@@ -121,7 +122,12 @@ export class Contours {
       }
     }
 
-    this.antialias({ x, y })
+    // Anti-aliasing creates a gradient brush effect. 'Raising' a point raises surrounding
+    // points as well.
+    // this.antialias({ x, y })
+
+    // gaussian
+
 
     const z = this._matrix[pos]
 
@@ -131,45 +137,59 @@ export class Contours {
 
   // ?? This helps make fluid diagonals drawn, but doesn't spread the force effect
   antialias ({ x, y }, iterations = 0) {
-    const ITERATION_CAP = 2
+    const ITERATION_CAP = 1 // To ensure decent performance
     if (!x || !y) return
-    if (iterations === ITERATION_CAP) return
+    if (iterations >= ITERATION_CAP) return
     if (x < 0 || y < 0 || x >= this.resolution.columnCount || y >= this.resolution.rowCount) return
 
-    const neighborCoors = new Array(8)
-    const neighborIndexes = new Array(8)
-
-    for (let i = -1; i <= 1; i++) {
-      for (let j = -1; j <= 1; j++) {
-        const coor = [ x + j, y + i ]
-        neighborIndexes.push(this._getMatrixIndex(...coor))
-        neighborCoors.push(...coor)
+    // Get coordinates and index positions (in 1-d array data structure) of the neighbors
+    // to the given point
+    const neighborCoors = []
+    const neighborIndexes = []
+    for (let i = -2; i <= 2; i++) {
+      for (let j = -2; j <= 2; j++) {
+        if (i !== 0 || j !== 0) {
+          const coor = [ x + j, y + i ]
+          neighborCoors.push(coor)
+          neighborIndexes.push(this._getMatrixIndex(...coor))
+        }
       }
     }
+
 
     const neighbors = neighborIndexes.map(i => {
       return this._getMatrixValue(i)
     })
 
     const currMatrixValue = this._getMatrixValue(this._getMatrixIndex(x, y))
-    // console.log([currMatrixValue, ...neighbors])
+    // Get average off all cells
     const newMatrixValue = [ currMatrixValue, ...neighbors ].reduce((prev, curr) => prev + curr) / 9
-    // console.log(newMatrixValue)
-    this._addToMatrixValue(this._getMatrixIndex(x, y), (newMatrixValue || 0)) // TODO: this is always returning 0 ? is newMatrixValue always invalid?
+    
+    // TODO: don't get matrix index of current cell twice
+    // this._addToMatrixValue(this._getMatrixIndex(x, y), (newMatrixValue || 0)) 
 
-    // TODO: filter internal coordinates, only antialias the edge of the current range --- DON'T ANTIALIAS WHAT"S ALREADY BEEN ANTIALIASED
-    neighborCoors.forEach(coor => {
-      this.antialias(coor, iterations + 1)
-    })
+    // neighborCoors.forEach(coor => {
+    //   this.antialias(coor, iterations + 1)
+    // })
   }
 
+  /**
+   * Returns an array of Multipolygons that represent the mapped contours of the given matrix.
+   * Each contour line is placed at an consistent interval. The number of buckets grows as the
+   * highest value in the matrix grows.
+   * TODO: should there be a maximum number of buckets for performance reasons?
+   */
   _getIsobands (matrix) {
-    const n = this.resolution.columnCount
-    const m = this.resolution.rowCount
+    const x = this.resolution.columnCount
+    const y = this.resolution.rowCount
+
+    // Equation ensures that the highest value is always contained within a bucket
+    const thresholdMax = (this.bucketCount + 1) * this.zRange / this.bucketCount
+    const thresholds = range(1, thresholdMax, CONTOUR_INTERVAL).reverse()
 
     const contours = d3.contours()
-      .size([ n, m ])
-      .thresholds(this._threshold())
+      .size([ x, y ])
+      .thresholds(thresholds)
 
     return contours(matrix)
   }
@@ -221,9 +241,6 @@ export class Contours {
     }
 
     const matrices = {
-      gradient: () => {
-        return range(0, this.matrixArea)
-      },
       random: () => {
         const values = initValues()
 
@@ -241,7 +258,6 @@ export class Contours {
             if (z < this.min) this.min = z
             if (z > this.max) this.max = z
 
-            // values[x * 10 + y] = z
             values[curr] = z
             curr++
           }
@@ -249,9 +265,8 @@ export class Contours {
 
         return values
       },
+      empty: initValues,
     }
-
-    matrices.empty = initValues // initValues
 
     return matrices
   }
