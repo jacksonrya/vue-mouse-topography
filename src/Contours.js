@@ -6,22 +6,18 @@ import range from 'lodash-es/range.js'
 export const THRESHOLD_OPTIONS = {
   EMPTY: 'empty',
   RANDOM: 'random',
-  GRADIENT: 'gradient',
-  GOLDSTEIN: 'goldstein',
 }
 
 // List of values that seperate contour buckets. The z-axis values at which contours lines are drawn.
 const THRESHOLDS = {
   empty: { threshold: function () { return range(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
   random: { threshold: function () { return range(0, 100, 10) } },
-  gradient: { threshold: function () { return range(0, this.matrixArea, this.matrixArea / 10) } },
-  goldstein: { threshold: function () { return range(2, 21).map(p => Math.pow(2, p)) } },
 }
 
 const CONTOUR_INTERVAL = 20 // The 'vertical' distance between each contour line.
 
 /**
- *
+ * Manages the creation of isoband contours.
  */
 export class Contours {
   constructor (resolution, preset) {
@@ -71,7 +67,7 @@ export class Contours {
   }
 
   _getMatrixIndex (x, y) { // TODO move to matrix class
-    return Math.floor((y * this.resolution.columnCount) + x)
+    return Math.floor((y * this.resolution.width) + x)
   }
 
   _addToMatrixValue (i, z) {
@@ -123,7 +119,7 @@ export class Contours {
     const ITERATION_CAP = 2
     if (!x || !y) return
     if (iterations === ITERATION_CAP) return
-    if (x < 0 || y < 0 || x >= this.resolution.columnCount || y >= this.resolution.rowCount) return
+    if (x < 0 || y < 0 || x >= this.resolution.width || y >= this.resolution.height) return
 
     const neighborCoors = new Array(8)
     const neighborIndexes = new Array(8)
@@ -153,8 +149,8 @@ export class Contours {
   }
 
   _getIsobands (matrix) {
-    const n = this.resolution.columnCount
-    const m = this.resolution.rowCount
+    const n = this.resolution.width
+    const m = this.resolution.height
 
     const contours = d3.contours()
       .size([ n, m ])
@@ -183,8 +179,8 @@ export class Contours {
 
     let curr = 0
 
-    for (let x = 0; x < this.resolution.columnCount; x++) {
-      for (let y = 0; y < this.resolution.rowCount; y++) {
+    for (let x = 0; x < this.resolution.width; x++) {
+      for (let y = 0; y < this.resolution.height; y++) {
         const z = [
           0,
           Math.random() * 100,
@@ -218,8 +214,8 @@ export class Contours {
 
         let curr = 0
 
-        for (let x = 0; x < this.resolution.columnCount; x++) {
-          for (let y = 0; y < this.resolution.rowCount; y++) {
+        for (let x = 0; x < this.resolution.width; x++) {
+          for (let y = 0; y < this.resolution.height; y++) {
             const z = [
               0,
               Math.random() * 100,
@@ -247,8 +243,8 @@ export class Contours {
         }
 
         // Populate a grid of n×m values where -2 ≤ x ≤ 2 and -2 ≤ y ≤ 1.
-        const n = this.resolution.columnCount
-        const m = this.resolution.rowCount
+        const n = this.resolution.width
+        const m = this.resolution.height
         for (let j = 0.5, k = 0; j < m; ++j) {
           for (let i = 0.5; i < n; ++i, ++k) {
             values[k] = goldsteinPrice(i / n * 4 - 2, 1 - j / m * 3)

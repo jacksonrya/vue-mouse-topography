@@ -3,30 +3,30 @@
  */
 export class Resolution {
   constructor (width, height) {
-    this.width = width
-    this.height = height
+    this._width = width
+    this._height = height
   }
 
-  get columnCount () {
-    return Math.ceil(this.width)
+  get width () {
+    return Math.ceil(this._width)
   }
 
-  get rowCount () {
-    return Math.ceil(this.height)
+  get height () {
+    return Math.ceil(this._height)
   }
 
   get resolutionSize () {
     return {
-      width: this.columnCount,
-      height: this.rowCount,
+      width: this.width,
+      height: this.height,
     }
   }
 
   get aspectRatio () {
-    return this.columnCount / this.rowCount
+    return this.width / this.height
   }
 
   get cellCount () {
-    return this.columnCount * this.rowCount
+    return this.width * this.height
   }
 }

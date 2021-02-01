@@ -1,19 +1,20 @@
 /* eslint-disable no-unused-vars */
-import fill from 'lodash-es/fill.js'
 import P5 from 'p5'
 
 import { Contours, THRESHOLD_OPTIONS } from './Contours'
-import { Grid } from './Grid'
+import Display from './Grid'
 
 const DEBUG = false
 const DRAW_GRID = DEBUG
-const DRAW_INTERACTVE_DOM = DEBUG
 
+/**
+ * Manages the drawing of topography.
+ */
 export default class {
   constructor ({
     canvasId = 'p5-canvas',
     canvasSize = undefined,
-    simplify = 30,
+    scale = 30,
     preset = THRESHOLD_OPTIONS.EMPTY, 
   }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
@@ -24,81 +25,82 @@ export default class {
       p5.draw = this._draw(p5)
     }, canvasId)
 
-    // The grid representing the rastered resolution of the canvas
-    this.grid = Grid.simplified(this.canvasSize, simplify)
-
-    this.topography = new Contours(this.grid, preset) // The topography...
-  }
-
-  /**
-   *
-   * @param {Object} topographyConfig
-   * @returns {TopographySketch}
-   */
-  static getGoldsteinInstance ({
-    canvasId, canvasSize, simplify, 
-  }) {
-    return new this({
-      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.GOLDSTEIN, 
+    this.display = new Display(canvasSize, {
+      width: canvasSize.width / scale,
+      height: canvasSize.height / scale,
     })
+
+    this.topography = new Contours(this.display, preset) // The topography...
   }
 
+
   /**
-   *
+   * Returns a sketch with random topography.
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
   static getRandomInstance ({
-    canvasId, canvasSize, simplify, 
+    canvasId, canvasSize, scale, 
   }) {
     return new this({
-      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.RANDOM, 
+      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.RANDOM, 
     })
   }
 
   /**
-   *
+   * Returns a sketch with no topography.
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
   static getEmptyInstance ({
-    canvasId, canvasSize, simplify, 
+    canvasId, canvasSize, scale, 
   }) {
     return new this({
-      canvasId, canvasSize, simplify, preset: THRESHOLD_OPTIONS.EMPTY, 
+      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.EMPTY, 
     })
   }
 
+  /**
+   * Erases and restarts the drawing.
+   */
   reset() {
     this.topography.reset()
     this.p5.redraw()
   }
 
+  /**
+   * Replaces the drawiing with random topography.
+   */
   randomize() {
     this.topography.randomize()
     this.p5.redraw()
   }
 
-  update (mousePosition, force = 0) {
-    const { x, y } = mousePosition
+  // ?? should the second parameter be an object that accepts: force, radius, direction (up vs down)
+  raiseAtPoint (pointOnCanvas, force = 0) {
+    const { x, y } = pointOnCanvas
 
-    this._updateMatrix({ x, y }, force)
+    const raisedDisplayCell = this._raisePointInTopography({ x, y }, force)
     this.p5.redraw()
+
+    return raisedDisplayCell
   }
 
   /**
    * Get the coordinates of a cell based on the given mouse position.
+   *
    * @param {Object} mousePosition Coordinates of the mouse.
    * @returns {Object} Coordinates of the cell.
    */
   getContainingCell(mousePosition) {
-    return this.grid.getContainingCellCoordinates(mousePosition)
+    return this.display.getContainingCellCoordinates(mousePosition)
   }
 
-  addPoint () {
-    console.log('Adding point not yet implemented.')
+  addPoint({ x, y }) {
+    console.log('Not yet implemented', x, y)
   }
 
+  /** p5 setup for the sketch. Runs once. */
   _setup (p5) {
     return () => {
       p5.createCanvas(this.canvasSize.width, this.canvasSize.height)
@@ -108,6 +110,7 @@ export default class {
     }
   }
 
+  /** p5 drawing loop for the sketch. */
   _draw (p5) {
     return () => {
       p5.push()
@@ -135,44 +138,42 @@ export default class {
     // if (DRAW_INTERACTVE_DOM) this.drawInteractiveDOM()
   }
 
-  // drawInteractiveDOM () {
-  //   const els = document.getElementsByClassName('topography-block')
-  //
-  //   els.forEach(el => {
-  //     const rect = el.getBoundingClientRect()
-  //     const {
-  //       x, y, width, height, 
-  //     } = rect
-  //
-  //     const padding = 40
-  //
-  //     this.p5.rect(x + window.scrollX - padding, y + window.scrollY - padding, width + padding * 2, height + padding * 2)
-  //   })
-  // }
-
-  _updateMatrix (mousePosition, force) {
+  /**
+   * Applies a force to the grid point that is closest to the given canvas point.
+   *
+   * @returns Coordinates of the display cell that was raised.
+   */
+  _raisePointInTopography (canvasPoint, force) {
     // TODO: use better logic to find the closest gridpoint(or center) and change it there
     // TODO: add distributed changes
+    
+    // From the given point, get the closest grid column
     let x
-    for (let i = 0; i < this.grid.columnCount; i++) {
-      if (mousePosition.x < (this.canvasSize.width / this.grid.columnCount * i)) {
+    for (let i = 0; i < this.display.width; i++) {
+      if (canvasPoint.x < (this.canvasSize.width / this.display.width * i)) {
         x = i - 1
         break
       }
     }
 
+    // From the given point, get the closest grid row
     let y
-    for (let i = 0; i < this.grid.rowCount; i++) {
-      if (mousePosition.y < (this.canvasSize.height / this.grid.rowCount * i)) {
+    for (let i = 0; i < this.display.height; i++) {
+      if (canvasPoint.y < (this.canvasSize.height / this.display.height * i)) {
         y = i - 1
         break
       }
     }
 
     this.topography.raise({ x, y }, force)
+
+    return { x, y }
   }
 
-  _makePolygon (polygon) {
+  /**
+   * Draws the given polygon.
+   */
+  _drawPolygon (polygon) {
     polygon.forEach(coor => {
       const [ x, y ] = coor
       const canvasCoor = this._getCanvasCoordinate(x, y)
@@ -181,7 +182,10 @@ export default class {
     })
   }
 
-  _makeMultipolygon (mp) {
+  /*8
+   * Draws the given multipolygon.
+   */
+  _drawMultipolygon (mp) {
     const p5 = this.p5
 
     mp.forEach(polygon => {
@@ -189,12 +193,12 @@ export default class {
 
       p5.beginShape()
 
-      this._makePolygon(positiveSpace)
+      this._drawPolygon(positiveSpace)
 
       polygon.forEach(negativeSpace => {
         p5.beginContour()
 
-        this._makePolygon(negativeSpace)
+        this._drawPolygon(negativeSpace)
 
         p5.endContour()
       })
@@ -203,22 +207,14 @@ export default class {
     })
   }
 
+  /**
+   * Returns the coordinate of the HTML canvas that corresponds to the given matrix coordinates.
+   */
   _getCanvasCoordinate (matrixX, matrixY) {
     return {
-      x: Math.floor(this.p5.map(matrixX, 0, this.grid.columnCount, 0, this.canvasSize.width)),
-      y: Math.floor(this.p5.map(matrixY, 0, this.grid.rowCount, 0, this.canvasSize.height)),
+      x: Math.floor(this.p5.map(matrixX, 0, this.display.width, 0, this.canvasSize.width)),
+      y: Math.floor(this.p5.map(matrixY, 0, this.display.height, 0, this.canvasSize.height)),
     }
-  }
-
-  _makeMatrix (matrix) {
-    matrix.forEach((z, i) => {
-      const x = i % this.grid.columnCount
-      const y = i / this.grid.columnCount
-
-      const canvasCoor = this._getCanvasCoordinate(x, y)
-
-      this.p5.circle(canvasCoor.x, canvasCoor.y, z)
-    })
   }
 
   /**
@@ -227,14 +223,28 @@ export default class {
   _drawGrid () {
     this.p5.stroke(0, 0, 90)
     this.p5.fill(0, 0, 90)
-    this._makeMatrix(fill(new Array(this.topography.matrixArea), 2))
+
+    this.topography.matrix.forEach((z, i) => {
+      const x = i % this.display.width
+      const y = i / this.display.width
+
+      const canvasCoor = this._getCanvasCoordinate(x, y)
+
+      this.p5.circle(canvasCoor.x, canvasCoor.y, z)
+    })
   }
 
+  /*8
+   * Resets stroke weight.
+   */
   _resetStrokeWeight () {
     const defaultStroke = 0.2
     this.p5.strokeWeight(defaultStroke)
   }
 
+  /**
+   * Draws the topography contours.
+   */
   _drawTopography () {
     const p5 = this.p5
 
@@ -273,13 +283,13 @@ export default class {
       if (i === 0) p5.noStroke()
       // if (i === 1) p5.strokeWeight(1)
 
-      this._makeMultipolygon(contour.coordinates || contour.geometry)
+      this._drawMultipolygon(contour.coordinates || contour.geometry)
     })
 
     if (DRAW_MATRIX) {
       this.p5.stroke('black')
       this.p5.fill('black')
-      this._makeMatrix(this.topography.matrix)
+      this._drawGrid()
     }
   }
 }

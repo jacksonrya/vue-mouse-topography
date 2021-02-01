@@ -3,7 +3,7 @@
     class="topography"
     @click="handleClick"
     @mousemove="handleMousemove"
-    @mouseleave="disable()"
+    @mouseleave="handleMouseleave"
   >
     <!-- <div -->
     <!--   :id="sketchId" -->
@@ -13,26 +13,27 @@
 </template>
 
 <script>
-import isEqual from 'lodash-es/isEqual.js'
+import { MouseTopography } from './MouseTopography'
 
-import TopographySketch from './sketch'
-
-const DEFAULT_SIMPLIFY_COEFFICIENT = 20 // Degree of polygon simplification
+const DEFAULT_SCALE_COEFFICIENT = 20 // Degree of polygon simplification
 const DEFAULT_PING_TIME = 15 // Amount of time(ms) between updates, in milliseconds.
 const DEFAULT_FORCE = 8 // The amount of 'z' added to a point during mouse movement.
 const DEFAULT_DECAY_TIME = 2000 // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
 
 var id = 0 // Unique id of of this component // TODO: test that this enables parallel topography instances
 
+// TODO: hovered cell management is broken. Drawing draws at full force when user makes small movements within a single cell.
+// TODO: clean up contours.js
+
 export default {
   name: 'VueMouseTopography',
   props: {
     // Degree to which simplification is applied to the contours.
-    simplify: {
+    scale: {
       type: Number,
       required: false,
       default () {
-        return DEFAULT_SIMPLIFY_COEFFICIENT
+        return DEFAULT_SCALE_COEFFICIENT
       },
     },
 
@@ -62,17 +63,20 @@ export default {
         return DEFAULT_DECAY_TIME
       },
     },
+
+    // The ID of the HTML element that acts as the mouse interface. The element that will be used to track the mouse.
+    interfaceId: {
+      type: String,
+      required: false,
+      default () {
+        return undefined
+      },
+    },
   },
   data () {
     return {
       sketchId: 'p5-canvas-' + ++id, // Unique id that matches the a child element's id.
-      sketch: undefined, // The p5 sketch.
-      mousePosition: undefined, // Mouse position coordinates relative to the root element's size.
-      prevMousePosition: undefined, // Previous mouse position.
-      mouseCell: undefined, // Coordinates of the resolution cell that the mouse is within.
-      prevMouseCell: undefined, // Previous coordinates of the resolution cell that the mouse was within.
-      updateIntervalId: undefined, // The id of the interval between updates.
-      restingPointerStartTime: undefined,
+      mouseTopo: undefined, // Topography drawing bound to mouse movements
     }
   },
   computed: {
@@ -85,108 +89,57 @@ export default {
     height () {
       return Math.ceil(this.$el.clientHeight)
     },
-
-    // Whether or not the mouse has moved since the last rendering update.
-    mouseMoved () {
-      if (!this.mousePosition) { return this.mousePosition !== this.prevMousePosition }
-
-      return !(
-        this.mousePosition.x === this.prevMousePosition.x &&
-        this.mousePosition.y === this.prevMousePosition.y
-      )
+  },
+  watch: {
+    decay: function(newDecay) {
+      this.mouseTopo.updateDecay(newDecay)
+    },
+    force: function(newForce) {
+      this.mouseTopo.updateForce(newForce)
     },
   },
   mounted () {
-    const topographyConfig = {
+    this.mouseTopo = new MouseTopography({
       canvasId: this.sketchId,
       canvasSize: { width: this.width, height: this.height },
-      simplify: this.simplify,
-    }
-
-    this.sketch = TopographySketch.getEmptyInstance(topographyConfig)
-
-    this.updateIntervalId = setInterval(this.update, this.ping)
+      scale: this.scale,
+      decay: this.decay,
+      force: this.force,
+      ping: this.ping,
+      interfaceId: this.interfaceId || this.sketchId,
+    })
   },
   unmounted () {
-    clearInterval(this.updateIntervalId)
+    this.mouseTopo.kill()
   },
   methods: {
-    /**
-     * @param {Event} e A mouse event.
-     * @returns {x: Number, y: Number} Mouse coordinates within this element's DOM box.
-     */
-    getMousePosition (e) {
-      const rect = this.$el.getBoundingClientRect()
-      return {
-        x: e.pageX - rect.x,
-        y: e.pageY + Math.abs(rect.y),
-      }
-    },
-
     handleClick (e) {
-      this.sketch.addPoint(this.getMousePosition(e))
+      this.mouseTopo.handleClick(e)
     },
 
     handleMousemove (e) {
-      this.prevMousePosition = this.mousePosition
-
-      this.mousePosition = this.getMousePosition(e)
-
-      this.updateMouseCell()
+      this.mouseTopo.updateMousePosition(e)
     },
 
-    updateMouseCell () {
-      this.prevMouseCell = this.mouseCell
-      this.mouseCell = this.sketch.getContainingCell(this.mousePosition)
-
-      if (this.mouseCellChanged(this.prevMouseCell, this.mouseCell)) {
-        this.restingPointerStartTime = new Date().getTime()
-      }
+    handleMouseleave () {
+      this.disable()
     },
 
-    // The resolution cell that the mouse is hovering over.
-    mouseCellChanged (prevMouseCell, mouseCell) {
-      if (!prevMouseCell && !mouseCell) return false
-
-      return !isEqual(prevMouseCell, mouseCell)
-    },
-
+    /** Resets the topography and updates the config. */
     reset () {
-      this.sketch.reset()
+      this.mouseTopo.resetSketch()
     },
 
+    /** Randomizes the topography. */
     randomize() {
-      this.sketch.randomize()
-    },
-
-    /**
-     * Updates the drawing to represent the current mouse position if one exists.
-     */
-    update () {
-      if (this.mousePosition) {
-        const hoverTime = new Date().getTime() - this.restingPointerStartTime
-
-        let hoverForce = (this.decay - hoverTime) / this.decay
-        if (hoverForce < 0) hoverForce = 0
-
-        const force = this.mouseCellChanged(this.prevMouseCell, this.mouseCell)
-          ? this.force
-          : (hoverForce * this.force) / 6 // arbitrary fraction of the default
-
-        this.sketch.update(this.mousePosition, force || 0)
-      }
-
-      this.prevMousePosition = this.mousePosition
-      this.updateMouseCell()
+      this.mouseTopo.randomizeSketch()
     },
 
     /**
      * Resets the variables that change the state of the topography.
      */
     disable () {
-      this.restingPointerStartTime = undefined
-      this.mousePosition = undefined
-      this.mouseCell = undefined
+      this.mouseTopo.disable()
     },
   },
 }

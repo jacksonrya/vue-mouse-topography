@@ -9,5 +9,6 @@ module.exports = {
   'parserOptions': {'parser': 'babel-eslint'},
   'rules': {
     'no-debugger': 1,
+    "space-infix-ops": 2,
   },
 };

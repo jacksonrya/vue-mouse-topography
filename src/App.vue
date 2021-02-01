@@ -3,7 +3,7 @@
     <mouse-topo
       ref="topo"
       class="contours"
-      :simplify="controls.simplify.value"
+      :scale="controls.scale.value"
       :ping="controls.ping.value"
       :force="controls.force.value"
       :decay="controls.decay.value"
@@ -49,7 +49,7 @@
 import MouseTopo from './vue-mouse-topography.vue';
 
 const CONTROLS = {
-  simplify: {
+  scale: {
     min: 1,
     max: 100,
     units: null,
