@@ -37,6 +37,12 @@ export class MouseTopography {
     this.hoverStartTime = null
   }
 
+  updatePing(ping) {
+    clearInterval(this.updateIntervalId)
+
+    this.updateIntervalId = setInterval(this.update.bind(this), ping)
+  }
+
   updateDecay(decay) {
     this.decay = decay
   }
@@ -119,8 +125,8 @@ export class MouseTopography {
   }
 
   /** Erases the topography and restarts the sketch with a new configuration. */
-  resetSketch() {
-    this.topographySketch.reset()
+  resetSketch(config) {
+    this.topographySketch.reset(config)
   }
 
   /** Randomizes the topography. */

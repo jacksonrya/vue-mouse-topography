@@ -62,10 +62,6 @@ export class Contours {
     return this._getIsobands(this.matrix)
   }
 
-  resetMatrix() {
-
-  }
-
   _getMatrixIndex (x, y) { // TODO move to matrix class
     return Math.floor((y * this.resolution.width) + x)
   }

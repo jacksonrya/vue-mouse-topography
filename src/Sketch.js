@@ -63,8 +63,20 @@ export default class {
   /**
    * Erases and restarts the drawing.
    */
-  reset() {
-    this.topography.reset()
+  reset(config) {
+    if (config.scale) {
+      const { scale } = config
+      const canvasSize = this.display.dimensions
+
+      this.display = new Display(canvasSize, {
+        width: canvasSize.width / scale,
+        height: canvasSize.height / scale,
+      })
+      this.topography = new Contours(this.display, THRESHOLD_OPTIONS.EMPTY)
+    } else {
+      this.topography.reset()
+    }
+
     this.p5.redraw()
   }
 

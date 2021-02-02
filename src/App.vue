@@ -56,8 +56,8 @@ const CONTROLS = {
     value: 20,
   },
   ping: {
-    min: 15,
-    max: 1000,
+    min: 5,
+    max: 50,
     units: 'ms',
     value: 15,
   },

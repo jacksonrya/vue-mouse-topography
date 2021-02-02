@@ -22,7 +22,6 @@ const DEFAULT_DECAY_TIME = 2000 // Amount of time(ms) before a cell stops growin
 
 var id = 0 // Unique id of of this component // TODO: test that this enables parallel topography instances
 
-// TODO: hovered cell management is broken. Drawing draws at full force when user makes small movements within a single cell.
 // TODO: clean up contours.js
 
 export default {
@@ -89,6 +88,18 @@ export default {
     height () {
       return Math.ceil(this.$el.clientHeight)
     },
+
+    topoConfig () {
+      return {
+        canvasId: this.sketchId,
+        canvasSize: { width: this.width, height: this.height },
+        scale: this.scale,
+        decay: this.decay,
+        force: this.force,
+        ping: this.ping,
+        interfaceId: this.interfaceId || this.sketchId,
+      }
+    },
   },
   watch: {
     decay: function(newDecay) {
@@ -97,17 +108,12 @@ export default {
     force: function(newForce) {
       this.mouseTopo.updateForce(newForce)
     },
+    ping: function(newPing) {
+      this.mouseTopo.updatePing(newPing)
+    },
   },
   mounted () {
-    this.mouseTopo = new MouseTopography({
-      canvasId: this.sketchId,
-      canvasSize: { width: this.width, height: this.height },
-      scale: this.scale,
-      decay: this.decay,
-      force: this.force,
-      ping: this.ping,
-      interfaceId: this.interfaceId || this.sketchId,
-    })
+    this.mouseTopo = new MouseTopography(this.topoConfig)
   },
   unmounted () {
     this.mouseTopo.kill()
@@ -127,7 +133,7 @@ export default {
 
     /** Resets the topography and updates the config. */
     reset () {
-      this.mouseTopo.resetSketch()
+      this.mouseTopo.resetSketch(this.topoConfig)
     },
 
     /** Randomizes the topography. */
