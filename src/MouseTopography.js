@@ -101,7 +101,10 @@ export class MouseTopography {
   }
 
   /** Update the mouse position via the given mouse event's data */
-  updateMousePosition(e) {
+  updateMousePosition(e, interfaceEl) {
+    console.log(MouseTrackingManager.getMousePositionFromEvent(e))
+    console.log(MouseTrackingManager.getMousePositionRelativeToGivenEl(e, interfaceEl))
+
     this.mouse.updateMousePosition(e)
     this.updateHoveredCell(e)
   }

@@ -1,13 +1,20 @@
 <template>
   <div id="app">
-    <mouse-topo
-      ref="topo"
-      class="contours"
-      :scale="controls.scale.value"
-      :ping="controls.ping.value"
-      :force="controls.force.value"
-      :decay="controls.decay.value"
-    />
+    <div class="container">
+      <mouse-topo
+        ref="topo"
+        class="contours"
+        :scale="controls.scale.value"
+        :ping="controls.ping.value"
+        :force="controls.force.value"
+        :decay="controls.decay.value"
+        :interface-id="interfaceId"
+      />
+      <div
+        :id="interfaceId"
+        class="contours"
+      />
+    </div>
     <table class="controls">
       <thead><tr>Controls</tr></thead>
 
@@ -79,7 +86,7 @@ export default {
   name: 'App',
   components: { MouseTopo },
   data() {
-    return { controls: CONTROLS }
+    return { interfaceId: 'mouse-interface', controls: CONTROLS }
   },
   methods: {
     reset () {
@@ -103,9 +110,20 @@ export default {
   display: flex;
 }
 
-#app > .contours {
-  border: 5px solid black;
+.container {
   width: 50%;
-  height: 50%;
+  height: 500px;
+
+  display: flex;
+  flex-direction:column;
+}
+
+.contours {
+  border: 5px solid black;
+  height: 100%;
+}
+
+.mouse-interface {
+  background-color: #efefff;
 }
 </style>
