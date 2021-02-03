@@ -71,6 +71,14 @@ export default {
         return DEFAULT_INTERFACE_ID
       },
     },
+
+    paused: {
+      type: Boolean,
+      required: false,
+      default() {
+        return false
+      },
+    },
   },
   data () {
     return {
@@ -125,20 +133,17 @@ export default {
     ping: function(newPing) {
       this.mouseTopo.updatePing(newPing)
     },
+    paused: function(newPaused) {
+      newPaused ? this.pause() : this.resume()
+    },
   },
   mounted () {
     this.mouseTopo = new MouseTopography(this.topoConfig)
-
-    Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
-      this.mouseInterfaceEl.addEventListener(event, handler)
-    })
+    this.trackMouse()
   },
   unmounted () {
+    this.untrackMouse()
     this.mouseTopo.kill()
-
-    Object.entries(this.interfaceEventHandlers).forEach(([ event ]) => {
-      this.mouseInterfaceEl.removeEventListener(event)
-    })
   },
   methods: {
     handleClick (e) {
@@ -151,6 +156,28 @@ export default {
 
     handleMouseleave () {
       this.disable()
+    },
+
+    pause() {
+      this.untrackMouse()
+    },
+
+    resume() {
+      this.trackMouse()
+    },
+
+    trackMouse() {
+      // ?? should the event listeners capture events (be the first to process before others in the DOM tree)
+      // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#matching_event_listeners_for_removal
+      Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
+        this.mouseInterfaceEl.addEventListener(event, handler)
+      })
+    },
+
+    untrackMouse() {
+      Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
+        this.mouseInterfaceEl.removeEventListener(event, handler)
+      })
     },
 
     /** Resets the topography and updates the config. */

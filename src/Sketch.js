@@ -9,6 +9,8 @@ const DRAW_GRID = DEBUG
 
 /**
  * Manages the drawing of topography.
+ * The drawing goes through a loop, each loop processes the topography data and updates the canvas
+ * ONLY if the topography data has changed (done via noLoop() in setup and redraw() as necessary).
  */
 export default class {
   constructor ({
@@ -93,6 +95,7 @@ export default class {
     const { x, y } = pointOnCanvas
 
     const raisedDisplayCell = this._raisePointInTopography({ x, y }, force)
+    // Calling redraw ensures the drawing loop is called only when necessary
     this.p5.redraw()
 
     return raisedDisplayCell
@@ -126,6 +129,8 @@ export default class {
   _draw (p5) {
     return () => {
       p5.push()
+
+      console.log('test')
 
       this._drawBackground()
       this._drawTopography()

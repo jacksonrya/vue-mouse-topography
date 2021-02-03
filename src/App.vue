@@ -8,7 +8,7 @@
         :ping="controls.ping.value"
         :force="controls.force.value"
         :decay="controls.decay.value"
-        :interface-id="interfaceId"
+        :paused="paused"
       />
       <div
         :id="interfaceId"
@@ -48,6 +48,12 @@
       <button @click="randomize">
         randomize
       </button>
+      <button @click="paused = true">
+        pause
+      </button>
+      <button @click="paused = false">
+        resume
+      </button>
     </table>
   </div>
 </template>
@@ -86,7 +92,9 @@ export default {
   name: 'App',
   components: { MouseTopo },
   data() {
-    return { interfaceId: 'mouse-interface', controls: CONTROLS }
+    return {
+      paused: false, interfaceId: 'mouse-interface', controls: CONTROLS, 
+    }
   },
   methods: {
     reset () {
