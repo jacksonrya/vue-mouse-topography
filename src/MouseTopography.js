@@ -15,7 +15,7 @@ export class MouseTopography {
     force,
     decay,
     ping,
-    interfaceId,
+    interfaceEl,
   }) {
     this.topographySketch = Sketch.getEmptyInstance({
       canvasId,
@@ -23,13 +23,15 @@ export class MouseTopography {
       scale,
     })
 
+    this.canvasSize = canvasSize
+
     // Update the drawing at a constant interval
     this.updateIntervalId = setInterval(this.update.bind(this), ping)
 
     this.decay = decay
     this.force = force
 
-    this.mouse = new MouseTrackingManager(interfaceId)
+    this.mouse = new MouseTrackingManager(interfaceEl)
 
     this.currHoveredCell = null
     this.prevHoveredCell = null
@@ -94,7 +96,7 @@ export class MouseTopography {
         ? this.force
         : (hoverForce * this.force) / 6 // arbitrary fraction of the default
 
-      this.currHoveredCell = this.topographySketch.raiseAtPoint(this.mouse.mousePosition, force || 0)
+      this.currHoveredCell = this.topographySketch.raiseAtPoint(this.mouse.getMappedMousePosition(this.canvasSize), force || 0)
     }
 
     this._updateHoveredCell()
@@ -115,7 +117,7 @@ export class MouseTopography {
     this.prevHoveredCell = this.currHoveredCell
 
     if (e !== null) {
-      this.currHoveredCell = this.topographySketch.getContainingCell(e)
+      this.currHoveredCell = this.topographySketch.getContainingCell(this.mouse.getMappedMousePosition(this.canvasSize))
       if (this.mouseCellChanged) {
         this.resetHoveringTimer()
       }

@@ -105,7 +105,7 @@ export default {
         decay: this.decay,
         force: this.force,
         ping: this.ping,
-        interfaceId: this.interfaceId,
+        interfaceEl: document.getElementById(this.interfaceId),
       }
     },
 

@@ -13,7 +13,7 @@
       />
       <div
         :id="interfaceId"
-        class="contours"
+        class="contours interface"
       />
     </div>
     <table class="controls">
@@ -130,6 +130,11 @@ export default {
 .contours {
   border: 5px solid black;
   height: 100%;
+}
+
+.interface {
+  width: 20%;
+  height: 20%;
 }
 
 .mouse-interface {

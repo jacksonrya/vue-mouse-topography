@@ -4,7 +4,9 @@
 
 // SHOULD THIS BE TRACKING THE CELL OF THE SIMPLIFICATION GRID? OR JUST THE MOUSE MOVEMENTS
 export default class MouseTrackingManager {
-  constructor() {
+  constructor(interfaceEl) {
+    this.interfaceEl = interfaceEl
+
     this.currMousePos = null
     this.prevMousePos = null
   }
@@ -19,26 +21,27 @@ export default class MouseTrackingManager {
     )
   }
 
-  /**
-     * @param {Event} e A mouse event.
-     * @returns {x: Number, y: Number} Mouse coordinates within this element's DOM box.
-     */
-  static getMousePositionRelativeToGivenEl (e, el) {
-    const rect = el.getBoundingClientRect()
-    return {
-      x: e.pageX - rect.x,
-      y: e.pageY + Math.abs(rect.y),
-    }
-  }
-
-  static getRelativeMousePosition(e) {
-    const interfaceEl = e.srcElement
-    const rect = interfaceEl.getBoundingClientRect()
+  static getMousePositionInEl(e) {
+    const rect = e.srcElement.getBoundingClientRect()
     return { x: e.x - rect.x, y: e.y - rect.y }
   }
 
   get mousePosition() {
     return this.currMousePos
+  }
+
+  get relativeMousePosition() {
+    const { x, y } = this.currMousePos
+    const { width, height } = this.interfaceEl.getBoundingClientRect()
+    return {
+      rx: x / width,
+      ry: y / height,
+    }
+  }
+
+  getMappedMousePosition({ width, height }) {
+    const { rx, ry } = this.relativeMousePosition
+    return { x: rx * width, y: ry * height }
   }
 
   /**
@@ -48,7 +51,8 @@ export default class MouseTrackingManager {
     this.prevMousePos = this.currMousePos
 
     if (e !== null) {
-      this.currMousePos = this.constructor.getRelativeMousePosition(e)
+      // this.interfaceEl = e.srcElement
+      this.currMousePos = this.constructor.getMousePositionInEl(e)
     }
   }
 
