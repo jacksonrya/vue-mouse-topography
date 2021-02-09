@@ -31,8 +31,10 @@ export default class MouseTrackingManager {
     }
   }
 
-  static getMousePositionFromEvent(e) {
-    return { x: e.x, y: e.y }
+  static getRelativeMousePosition(e) {
+    const interfaceEl = e.srcElement
+    const rect = interfaceEl.getBoundingClientRect()
+    return { x: e.x - rect.x, y: e.y - rect.y }
   }
 
   get mousePosition() {
@@ -46,7 +48,7 @@ export default class MouseTrackingManager {
     this.prevMousePos = this.currMousePos
 
     if (e !== null) {
-      this.currMousePos = this.constructor.getMousePositionFromEvent(e)
+      this.currMousePos = this.constructor.getRelativeMousePosition(e)
     }
   }
 

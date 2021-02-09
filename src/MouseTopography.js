@@ -85,7 +85,7 @@ export class MouseTopography {
     if (this.currHoveredCell) {
       const hoverTime = this.timeSpentHoveringOverCell || 0
 
-      // Gradually lessen the force of drawing over the decay period while the user doesn't move the mouse
+      // Gradually lessen the force of drawing during the decay period while the user doesn't move the mouse
       let hoverForce = (this.decay - hoverTime) / this.decay
       if (hoverForce < 0) hoverForce = 0
 
@@ -97,26 +97,26 @@ export class MouseTopography {
       this.currHoveredCell = this.topographySketch.raiseAtPoint(this.mouse.mousePosition, force || 0)
     }
 
-    this.updateHoveredCell()
+    this._updateHoveredCell()
   }
 
-  /** Update the mouse position via the given mouse event's data */
-  updateMousePosition(e, interfaceEl) {
-    console.log(MouseTrackingManager.getMousePositionFromEvent(e))
-    console.log(MouseTrackingManager.getMousePositionRelativeToGivenEl(e, interfaceEl))
+  // _mappedMousePosition(interfacePoint) {
+  //   
+  // }
 
+  /** Update the mouse position via the given mouse event's data */
+  updateMousePosition(e) {
     this.mouse.updateMousePosition(e)
-    this.updateHoveredCell(e)
+    this._updateHoveredCell(e)
   }
 
   /** Updates which display cell is currently hovered by the user. */
-  updateHoveredCell(e = null) {
+  _updateHoveredCell(e = null) {
     this.prevHoveredCell = this.currHoveredCell
 
     if (e !== null) {
       this.currHoveredCell = this.topographySketch.getContainingCell(e)
       if (this.mouseCellChanged) {
-        console.log('update')
         this.resetHoveringTimer()
       }
     }

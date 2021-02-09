@@ -130,8 +130,6 @@ export default class {
     return () => {
       p5.push()
 
-      console.log('test')
-
       this._drawBackground()
       this._drawTopography()
       this._drawForeground()

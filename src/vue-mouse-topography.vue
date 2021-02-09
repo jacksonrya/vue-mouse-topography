@@ -151,7 +151,7 @@ export default {
     },
 
     handleMousemove (e) {
-      this.mouseTopo.updateMousePosition(e, this.mouseInterfaceEl)
+      this.mouseTopo.updateMousePosition(e)
     },
 
     handleMouseleave () {

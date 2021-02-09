@@ -9,6 +9,7 @@
         :force="controls.force.value"
         :decay="controls.decay.value"
         :paused="paused"
+        :interface-id="interfaceId"
       />
       <div
         :id="interfaceId"
