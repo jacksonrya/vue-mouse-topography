@@ -2021,311 +2021,70 @@
     return baseIsEqual(value, other);
   }
 
-  /** `Object#toString` result references. */
-  var symbolTag$1 = '[object Symbol]';
-
   /**
-   * Checks if `value` is classified as a `Symbol` primitive or object.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
-   * @example
-   *
-   * _.isSymbol(Symbol.iterator);
-   * // => true
-   *
-   * _.isSymbol('abc');
-   * // => false
+   * Tracks the mouse movements within a given HTML element.
    */
-  function isSymbol(value) {
-    return typeof value == 'symbol' ||
-      (isObjectLike(value) && baseGetTag(value) == symbolTag$1);
-  }
 
-  /** Used as references for various `Number` constants. */
-  var NAN = 0 / 0;
+  // SHOULD THIS BE TRACKING THE CELL OF THE SIMPLIFICATION GRID? OR JUST THE MOUSE MOVEMENTS
+  class MouseTrackingManager {
+    constructor(interfaceEl) {
+      this.interfaceEl = interfaceEl;
 
-  /** Used to match leading and trailing whitespace. */
-  var reTrim = /^\s+|\s+$/g;
-
-  /** Used to detect bad signed hexadecimal string values. */
-  var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-
-  /** Used to detect binary string values. */
-  var reIsBinary = /^0b[01]+$/i;
-
-  /** Used to detect octal string values. */
-  var reIsOctal = /^0o[0-7]+$/i;
-
-  /** Built-in method references without a dependency on `root`. */
-  var freeParseInt = parseInt;
-
-  /**
-   * Converts `value` to a number.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to process.
-   * @returns {number} Returns the number.
-   * @example
-   *
-   * _.toNumber(3.2);
-   * // => 3.2
-   *
-   * _.toNumber(Number.MIN_VALUE);
-   * // => 5e-324
-   *
-   * _.toNumber(Infinity);
-   * // => Infinity
-   *
-   * _.toNumber('3.2');
-   * // => 3.2
-   */
-  function toNumber(value) {
-    if (typeof value == 'number') {
-      return value;
+      this.currMousePos = null;
+      this.prevMousePos = null;
     }
-    if (isSymbol(value)) {
-      return NAN;
-    }
-    if (isObject(value)) {
-      var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-      value = isObject(other) ? (other + '') : other;
-    }
-    if (typeof value != 'string') {
-      return value === 0 ? value : +value;
-    }
-    value = value.replace(reTrim, '');
-    var isBinary = reIsBinary.test(value);
-    return (isBinary || reIsOctal.test(value))
-      ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-      : (reIsBadHex.test(value) ? NAN : +value);
-  }
 
-  /** Used as references for various `Number` constants. */
-  var INFINITY = 1 / 0,
-      MAX_INTEGER = 1.7976931348623157e+308;
+    // Whether or not the mouse has moved since the last rendering update.
+    get mouseMoved() {
+      if (!this.currMousePos) {return this.currMousePos !== this.prevMousePos}
 
-  /**
-   * Converts `value` to a finite number.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.12.0
-   * @category Lang
-   * @param {*} value The value to convert.
-   * @returns {number} Returns the converted number.
-   * @example
-   *
-   * _.toFinite(3.2);
-   * // => 3.2
-   *
-   * _.toFinite(Number.MIN_VALUE);
-   * // => 5e-324
-   *
-   * _.toFinite(Infinity);
-   * // => 1.7976931348623157e+308
-   *
-   * _.toFinite('3.2');
-   * // => 3.2
-   */
-  function toFinite(value) {
-    if (!value) {
-      return value === 0 ? value : 0;
+      return !(
+        this.currMousePos.x === this.prevMousePos.x &&
+        this.currMousePos.y === this.prevMousePos.y
+      )
     }
-    value = toNumber(value);
-    if (value === INFINITY || value === -INFINITY) {
-      var sign = (value < 0 ? -1 : 1);
-      return sign * MAX_INTEGER;
+
+    static getMousePositionWithinEl(e) {
+      const rect = e.srcElement.getBoundingClientRect();
+      return { x: e.x - rect.x, y: e.y - rect.y }
     }
-    return value === value ? value : 0;
-  }
 
-  /**
-   * Converts `value` to an integer.
-   *
-   * **Note:** This method is loosely based on
-   * [`ToInteger`](http://www.ecma-international.org/ecma-262/7.0/#sec-tointeger).
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to convert.
-   * @returns {number} Returns the converted integer.
-   * @example
-   *
-   * _.toInteger(3.2);
-   * // => 3
-   *
-   * _.toInteger(Number.MIN_VALUE);
-   * // => 0
-   *
-   * _.toInteger(Infinity);
-   * // => 1.7976931348623157e+308
-   *
-   * _.toInteger('3.2');
-   * // => 3
-   */
-  function toInteger(value) {
-    var result = toFinite(value),
-        remainder = result % 1;
+    get mousePosition() {
+      return this.currMousePos
+    }
 
-    return result === result ? (remainder ? result - remainder : result) : 0;
-  }
-
-  /**
-   * The base implementation of `_.clamp` which doesn't coerce arguments.
-   *
-   * @private
-   * @param {number} number The number to clamp.
-   * @param {number} [lower] The lower bound.
-   * @param {number} upper The upper bound.
-   * @returns {number} Returns the clamped number.
-   */
-  function baseClamp(number, lower, upper) {
-    if (number === number) {
-      if (upper !== undefined) {
-        number = number <= upper ? number : upper;
-      }
-      if (lower !== undefined) {
-        number = number >= lower ? number : lower;
+    get relativeMousePosition() {
+      const { x, y } = this.currMousePos;
+      const { width, height } = this.interfaceEl.getBoundingClientRect();
+      return {
+        rx: x / width,
+        ry: y / height,
       }
     }
-    return number;
-  }
 
-  /** Used as references for the maximum length and index of an array. */
-  var MAX_ARRAY_LENGTH = 4294967295;
+    getMappedMousePosition({ width, height }) {
+      const { rx, ry } = this.relativeMousePosition;
+      return { x: rx * width, y: ry * height }
+    }
 
-  /**
-   * Converts `value` to an integer suitable for use as the length of an
-   * array-like object.
-   *
-   * **Note:** This method is based on
-   * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to convert.
-   * @returns {number} Returns the converted integer.
-   * @example
-   *
-   * _.toLength(3.2);
-   * // => 3
-   *
-   * _.toLength(Number.MIN_VALUE);
-   * // => 0
-   *
-   * _.toLength(Infinity);
-   * // => 4294967295
-   *
-   * _.toLength('3.2');
-   * // => 3
-   */
-  function toLength(value) {
-    return value ? baseClamp(toInteger(value), 0, MAX_ARRAY_LENGTH) : 0;
-  }
+    /**
+     * Updates the mouse position with a given mouse move event.
+     */
+    updateMousePosition(e = null) {
+      this.prevMousePos = this.currMousePos;
 
-  /**
-   * The base implementation of `_.fill` without an iteratee call guard.
-   *
-   * @private
-   * @param {Array} array The array to fill.
-   * @param {*} value The value to fill `array` with.
-   * @param {number} [start=0] The start position.
-   * @param {number} [end=array.length] The end position.
-   * @returns {Array} Returns `array`.
-   */
-  function baseFill(array, value, start, end) {
-    var length = array.length;
+      if (e !== null) {
+        // this.interfaceEl = e.srcElement
+        this.currMousePos = this.constructor.getMousePositionWithinEl(e);
+      }
+    }
 
-    start = toInteger(start);
-    if (start < 0) {
-      start = -start > length ? 0 : (length + start);
+    // Resets the variables that change the state of topography?
+    // TODO: disconnect wording from topography. figure out what this does and how to reverse it
+    disable() {
+      this.hoverStartTime = null;
+      this.currMousePos = null;
     }
-    end = (end === undefined || end > length) ? length : toInteger(end);
-    if (end < 0) {
-      end += length;
-    }
-    end = start > end ? 0 : toLength(end);
-    while (start < end) {
-      array[start++] = value;
-    }
-    return array;
-  }
-
-  /**
-   * Checks if the given arguments are from an iteratee call.
-   *
-   * @private
-   * @param {*} value The potential iteratee value argument.
-   * @param {*} index The potential iteratee index or key argument.
-   * @param {*} object The potential iteratee object argument.
-   * @returns {boolean} Returns `true` if the arguments are from an iteratee call,
-   *  else `false`.
-   */
-  function isIterateeCall(value, index, object) {
-    if (!isObject(object)) {
-      return false;
-    }
-    var type = typeof index;
-    if (type == 'number'
-          ? (isArrayLike(object) && isIndex(index, object.length))
-          : (type == 'string' && index in object)
-        ) {
-      return eq(object[index], value);
-    }
-    return false;
-  }
-
-  /**
-   * Fills elements of `array` with `value` from `start` up to, but not
-   * including, `end`.
-   *
-   * **Note:** This method mutates `array`.
-   *
-   * @static
-   * @memberOf _
-   * @since 3.2.0
-   * @category Array
-   * @param {Array} array The array to fill.
-   * @param {*} value The value to fill `array` with.
-   * @param {number} [start=0] The start position.
-   * @param {number} [end=array.length] The end position.
-   * @returns {Array} Returns `array`.
-   * @example
-   *
-   * var array = [1, 2, 3];
-   *
-   * _.fill(array, 'a');
-   * console.log(array);
-   * // => ['a', 'a', 'a']
-   *
-   * _.fill(Array(3), 2);
-   * // => [2, 2, 2]
-   *
-   * _.fill([4, 6, 8, 10], '*', 1, 3);
-   * // => [4, '*', '*', 10]
-   */
-  function fill(array, value, start, end) {
-    var length = array == null ? 0 : array.length;
-    if (!length) {
-      return [];
-    }
-    if (start && typeof start != 'number' && isIterateeCall(array, value, start)) {
-      start = 0;
-      end = length;
-    }
-    return baseFill(array, value, start, end);
   }
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -2674,6 +2433,313 @@
     return contours;
   }
 
+  /** `Object#toString` result references. */
+  var symbolTag$1 = '[object Symbol]';
+
+  /**
+   * Checks if `value` is classified as a `Symbol` primitive or object.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+   * @example
+   *
+   * _.isSymbol(Symbol.iterator);
+   * // => true
+   *
+   * _.isSymbol('abc');
+   * // => false
+   */
+  function isSymbol(value) {
+    return typeof value == 'symbol' ||
+      (isObjectLike(value) && baseGetTag(value) == symbolTag$1);
+  }
+
+  /** Used as references for various `Number` constants. */
+  var NAN = 0 / 0;
+
+  /** Used to match leading and trailing whitespace. */
+  var reTrim = /^\s+|\s+$/g;
+
+  /** Used to detect bad signed hexadecimal string values. */
+  var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+
+  /** Used to detect binary string values. */
+  var reIsBinary = /^0b[01]+$/i;
+
+  /** Used to detect octal string values. */
+  var reIsOctal = /^0o[0-7]+$/i;
+
+  /** Built-in method references without a dependency on `root`. */
+  var freeParseInt = parseInt;
+
+  /**
+   * Converts `value` to a number.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to process.
+   * @returns {number} Returns the number.
+   * @example
+   *
+   * _.toNumber(3.2);
+   * // => 3.2
+   *
+   * _.toNumber(Number.MIN_VALUE);
+   * // => 5e-324
+   *
+   * _.toNumber(Infinity);
+   * // => Infinity
+   *
+   * _.toNumber('3.2');
+   * // => 3.2
+   */
+  function toNumber(value) {
+    if (typeof value == 'number') {
+      return value;
+    }
+    if (isSymbol(value)) {
+      return NAN;
+    }
+    if (isObject(value)) {
+      var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
+      value = isObject(other) ? (other + '') : other;
+    }
+    if (typeof value != 'string') {
+      return value === 0 ? value : +value;
+    }
+    value = value.replace(reTrim, '');
+    var isBinary = reIsBinary.test(value);
+    return (isBinary || reIsOctal.test(value))
+      ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+      : (reIsBadHex.test(value) ? NAN : +value);
+  }
+
+  /** Used as references for various `Number` constants. */
+  var INFINITY = 1 / 0,
+      MAX_INTEGER = 1.7976931348623157e+308;
+
+  /**
+   * Converts `value` to a finite number.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.12.0
+   * @category Lang
+   * @param {*} value The value to convert.
+   * @returns {number} Returns the converted number.
+   * @example
+   *
+   * _.toFinite(3.2);
+   * // => 3.2
+   *
+   * _.toFinite(Number.MIN_VALUE);
+   * // => 5e-324
+   *
+   * _.toFinite(Infinity);
+   * // => 1.7976931348623157e+308
+   *
+   * _.toFinite('3.2');
+   * // => 3.2
+   */
+  function toFinite(value) {
+    if (!value) {
+      return value === 0 ? value : 0;
+    }
+    value = toNumber(value);
+    if (value === INFINITY || value === -INFINITY) {
+      var sign = (value < 0 ? -1 : 1);
+      return sign * MAX_INTEGER;
+    }
+    return value === value ? value : 0;
+  }
+
+  /**
+   * Converts `value` to an integer.
+   *
+   * **Note:** This method is loosely based on
+   * [`ToInteger`](http://www.ecma-international.org/ecma-262/7.0/#sec-tointeger).
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to convert.
+   * @returns {number} Returns the converted integer.
+   * @example
+   *
+   * _.toInteger(3.2);
+   * // => 3
+   *
+   * _.toInteger(Number.MIN_VALUE);
+   * // => 0
+   *
+   * _.toInteger(Infinity);
+   * // => 1.7976931348623157e+308
+   *
+   * _.toInteger('3.2');
+   * // => 3
+   */
+  function toInteger(value) {
+    var result = toFinite(value),
+        remainder = result % 1;
+
+    return result === result ? (remainder ? result - remainder : result) : 0;
+  }
+
+  /**
+   * The base implementation of `_.clamp` which doesn't coerce arguments.
+   *
+   * @private
+   * @param {number} number The number to clamp.
+   * @param {number} [lower] The lower bound.
+   * @param {number} upper The upper bound.
+   * @returns {number} Returns the clamped number.
+   */
+  function baseClamp(number, lower, upper) {
+    if (number === number) {
+      if (upper !== undefined) {
+        number = number <= upper ? number : upper;
+      }
+      if (lower !== undefined) {
+        number = number >= lower ? number : lower;
+      }
+    }
+    return number;
+  }
+
+  /** Used as references for the maximum length and index of an array. */
+  var MAX_ARRAY_LENGTH = 4294967295;
+
+  /**
+   * Converts `value` to an integer suitable for use as the length of an
+   * array-like object.
+   *
+   * **Note:** This method is based on
+   * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to convert.
+   * @returns {number} Returns the converted integer.
+   * @example
+   *
+   * _.toLength(3.2);
+   * // => 3
+   *
+   * _.toLength(Number.MIN_VALUE);
+   * // => 0
+   *
+   * _.toLength(Infinity);
+   * // => 4294967295
+   *
+   * _.toLength('3.2');
+   * // => 3
+   */
+  function toLength(value) {
+    return value ? baseClamp(toInteger(value), 0, MAX_ARRAY_LENGTH) : 0;
+  }
+
+  /**
+   * The base implementation of `_.fill` without an iteratee call guard.
+   *
+   * @private
+   * @param {Array} array The array to fill.
+   * @param {*} value The value to fill `array` with.
+   * @param {number} [start=0] The start position.
+   * @param {number} [end=array.length] The end position.
+   * @returns {Array} Returns `array`.
+   */
+  function baseFill(array, value, start, end) {
+    var length = array.length;
+
+    start = toInteger(start);
+    if (start < 0) {
+      start = -start > length ? 0 : (length + start);
+    }
+    end = (end === undefined || end > length) ? length : toInteger(end);
+    if (end < 0) {
+      end += length;
+    }
+    end = start > end ? 0 : toLength(end);
+    while (start < end) {
+      array[start++] = value;
+    }
+    return array;
+  }
+
+  /**
+   * Checks if the given arguments are from an iteratee call.
+   *
+   * @private
+   * @param {*} value The potential iteratee value argument.
+   * @param {*} index The potential iteratee index or key argument.
+   * @param {*} object The potential iteratee object argument.
+   * @returns {boolean} Returns `true` if the arguments are from an iteratee call,
+   *  else `false`.
+   */
+  function isIterateeCall(value, index, object) {
+    if (!isObject(object)) {
+      return false;
+    }
+    var type = typeof index;
+    if (type == 'number'
+          ? (isArrayLike(object) && isIndex(index, object.length))
+          : (type == 'string' && index in object)
+        ) {
+      return eq(object[index], value);
+    }
+    return false;
+  }
+
+  /**
+   * Fills elements of `array` with `value` from `start` up to, but not
+   * including, `end`.
+   *
+   * **Note:** This method mutates `array`.
+   *
+   * @static
+   * @memberOf _
+   * @since 3.2.0
+   * @category Array
+   * @param {Array} array The array to fill.
+   * @param {*} value The value to fill `array` with.
+   * @param {number} [start=0] The start position.
+   * @param {number} [end=array.length] The end position.
+   * @returns {Array} Returns `array`.
+   * @example
+   *
+   * var array = [1, 2, 3];
+   *
+   * _.fill(array, 'a');
+   * console.log(array);
+   * // => ['a', 'a', 'a']
+   *
+   * _.fill(Array(3), 2);
+   * // => [2, 2, 2]
+   *
+   * _.fill([4, 6, 8, 10], '*', 1, 3);
+   * // => [4, '*', '*', 10]
+   */
+  function fill(array, value, start, end) {
+    var length = array == null ? 0 : array.length;
+    if (!length) {
+      return [];
+    }
+    if (start && typeof start != 'number' && isIterateeCall(array, value, start)) {
+      start = 0;
+      end = length;
+    }
+    return baseFill(array, value, start, end);
+  }
+
   /* Built-in method references for those with the same name as other `lodash` methods. */
   var nativeCeil = Math.ceil,
       nativeMax = Math.max;
@@ -2771,24 +2837,25 @@
 
   /* eslint-disable no-unused-vars */
 
-  const EMPTY = 'empty';
-  const RANDOM = 'random';
-  const GOLDSTEIN = 'goldstein';
+  const THRESHOLD_OPTIONS = {
+    EMPTY: 'empty',
+    RANDOM: 'random',
+  };
 
-  // List of values that seperate contour buckets. The topography heights at which contours lines are drawn.
+  // List of values that seperate contour buckets. The z-axis values at which contours lines are drawn.
   const THRESHOLDS = {
     empty: { threshold: function () { return range$1(1, (this.bucketCount + 1) * this.zRange / this.bucketCount, CONTOUR_INTERVAL).reverse() } },
     random: { threshold: function () { return range$1(0, 100, 10) } },
-    gradient: { threshold: function () { return range$1(0, this.matrixArea, this.matrixArea / 10) } },
-    goldstein: { threshold: function () { return range$1(2, 21).map(p => Math.pow(2, p)) } },
   };
 
   const CONTOUR_INTERVAL = 20; // The 'vertical' distance between each contour line.
 
-  class Topography {
-    constructor (resolution, viewport, preset) {
+  /**
+   * Manages the creation of isoband contours.
+   */
+  class Contours {
+    constructor (resolution, preset) {
       this.resolution = resolution;
-      this.viewport = viewport;
 
       this.min = Infinity;
       this.max = -Infinity;
@@ -2801,17 +2868,36 @@
       return new this(resolution)
     }
 
+    get matrix() {
+      return this._matrix
+    }
+
+    set matrix(matrix) {
+      // validate that the new matrix can replace the old
+      this._matrix = matrix;
+    }
+
+    get matrixArea() {
+      if (!this.resolution) return 0
+
+      return this.resolution.cellCount
+    }
+
     get zRange () {
       return Math.ceil(this.max - this.min)
     }
 
-    // The number of sorting buckets to accomodate all topography heights.
+    // The number of sorting buckets to accomodate all z-axis values.
     get bucketCount () {
       return Math.ceil(this.max / CONTOUR_INTERVAL)
     }
 
+    get isobands() {
+      return this._getIsobands(this.matrix)
+    }
+
     _getMatrixIndex (x, y) { // TODO move to matrix class
-      return Math.floor((y * this.resolution.columnCount) + x)
+      return Math.floor((y * this.resolution.width) + x)
     }
 
     _addToMatrixValue (i, z) {
@@ -2824,6 +2910,14 @@
       }
 
       return this._matrix[i]
+    }
+
+    reset() {
+      this._clearMatrix();
+    }
+
+    randomize() {
+      this._randomizeMatrix();
     }
 
     raise ({ x, y }, zDelta = 100, density = 4) {
@@ -2855,7 +2949,7 @@
       const ITERATION_CAP = 2;
       if (!x || !y) return
       if (iterations === ITERATION_CAP) return
-      if (x < 0 || y < 0 || x >= this.resolution.columnCount || y >= this.resolution.rowCount) return
+      if (x < 0 || y < 0 || x >= this.resolution.width || y >= this.resolution.height) return
 
       const neighborCoors = new Array(8);
       const neighborIndexes = new Array(8);
@@ -2872,8 +2966,6 @@
         return this._getMatrixValue(i)
       });
 
-      // console.log(x, y, this._getMatrixIndex(x, y))
-
       const currMatrixValue = this._getMatrixValue(this._getMatrixIndex(x, y));
       // console.log([currMatrixValue, ...neighbors])
       const newMatrixValue = [ currMatrixValue, ...neighbors ].reduce((prev, curr) => prev + curr) / 9;
@@ -2886,9 +2978,9 @@
       });
     }
 
-    getIsobands (matrix = this.getMatrix()) {
-      const n = this.resolution.columnCount;
-      const m = this.resolution.rowCount;
+    _getIsobands (matrix) {
+      const n = this.resolution.width;
+      const m = this.resolution.height;
 
       const contours$1 = contours()
         .size([ n, m ])
@@ -2908,10 +3000,34 @@
       return num
     }
 
-    get matrixArea() {
-      if (!this.resolution) return 0
+    _clearMatrix() {
+      this.matrix = fill(new Array(this.matrixArea), 10);
+    }
 
-      return this.resolution.cellCount
+    _randomizeMatrix() {
+      const values = fill(new Array(this.matrixArea), 10); // TODO reduce redundancy with clearmatrix
+
+      let curr = 0;
+
+      for (let x = 0; x < this.resolution.width; x++) {
+        for (let y = 0; y < this.resolution.height; y++) {
+          const z = [
+            0,
+            Math.random() * 100,
+            (x * 10) + y,
+            this._randomBm() * 100,
+          ][3];
+
+          if (z < this.min) this.min = z;
+          if (z > this.max) this.max = z;
+
+          // values[x * 10 + y] = z
+          values[curr] = z;
+          curr++;
+        }
+      }
+
+      this.matrix = values;
     }
 
     _initMatrix () {
@@ -2928,8 +3044,8 @@
 
           let curr = 0;
 
-          for (let x = 0; x < this.resolution.columnCount; x++) {
-            for (let y = 0; y < this.resolution.rowCount; y++) {
+          for (let x = 0; x < this.resolution.width; x++) {
+            for (let y = 0; y < this.resolution.height; y++) {
               const z = [
                 0,
                 Math.random() * 100,
@@ -2957,8 +3073,8 @@
           }
 
           // Populate a grid of n×m values where -2 ≤ x ≤ 2 and -2 ≤ y ≤ 1.
-          const n = this.resolution.columnCount;
-          const m = this.resolution.rowCount;
+          const n = this.resolution.width;
+          const m = this.resolution.height;
           for (let j = 0.5, k = 0; j < m; ++j) {
             for (let i = 0.5; i < n; ++i, ++k) {
               values[k] = goldsteinPrice(i / n * 4 - 2, 1 - j / m * 3);
@@ -2970,172 +3086,208 @@
 
       };
 
-      // console.log(initValues())
-
       matrices.empty = initValues; // initValues
 
       return matrices
     }
-
-    getMatrix () {
-      return this._matrix
-    }
   }
 
-  /* eslint-disable no-unused-vars */
-
-  // The resolution of the drawing--contour line granularity.
+  /**
+   * The resolution of the drawing--contour line granularity.
+   */
   class Resolution {
     constructor (width, height) {
-      this.width = width;
-      this.height = height;
+      this._width = width;
+      this._height = height;
     }
 
-    get columnCount () {
-      return Math.ceil(this.width)
+    get width () {
+      return Math.ceil(this._width)
     }
 
-    get rowCount () {
-      return Math.ceil(this.height)
+    get height () {
+      return Math.ceil(this._height)
     }
 
-    get size () {
+    get resolutionSize () {
       return {
-        width: this.columnCount,
-        height: this.rowCount,
+        width: this.width,
+        height: this.height,
       }
     }
 
     get aspectRatio () {
-      return this.columnCount / this.rowCount
+      return this.width / this.height
     }
 
     get cellCount () {
-      return this.columnCount * this.rowCount
+      return this.width * this.height
     }
   }
 
   /**
    * The matrix of cells that span the sketch client.
    */
-  class Plat {
-    constructor (size, resolution) {
-      this.size = size;
-      this.resolution = resolution;
+  class Grid extends Resolution {
+    constructor(dimensions, resolution) {
+      super(resolution.width, resolution.height);
+      this._dimensions = dimensions;
     }
 
-    get cellSize () {
+    get dimensions() {
+      return this._dimensions
+    }
+
+    get cellDimensions() {
       return {
-        width: this.size.width / this.resolution.columnCount,
-        height: this.size.height / this.resolution.rowCount,
+        width: this.dimensions.width / this.width,
+        height: this.dimensions.height / this.height,
       }
     }
 
-    getCell (mousePosition) {
-      if (!mousePosition || !mousePosition.x || !mousePosition.y) {
+    /**
+     * Returns the coordinates of the cell that contains the given point.
+     */
+    getContainingCellCoordinates({ x, y } = {}) {
+      if (x === undefined || y === undefined || !x || !y) {
         return {}
       }
 
       return {
-        x: Math.floor(mousePosition.x / this.cellSize.width),
-        y: Math.floor(mousePosition.y / this.cellSize.height),
+        x: Math.floor(x / this.cellDimensions.width),
+        y: Math.floor(y / this.cellDimensions.height),
       }
     }
   }
 
-  class TopographySketch {
+  /* eslint-disable no-unused-vars */
+
+  /**
+   * Manages the drawing of topography.
+   * The drawing goes through a loop, each loop processes the topography data and updates the canvas
+   * ONLY if the topography data has changed (done via noLoop() in setup and redraw() as necessary).
+   */
+  class Sketch {
     constructor ({
       canvasId = 'p5-canvas',
-      dimensions = undefined,
-      simplify = 30,
-      preset = EMPTY, 
+      canvasSize = undefined,
+      scale = 30,
+      preset = THRESHOLD_OPTIONS.EMPTY, 
     }) {
       this.canvasId = canvasId; // The element's id for the p5 sketch.
-      this.dimensions = dimensions; // The screen size of the topography container.
+      this.canvasSize = canvasSize; // The screen size of the sketch.
 
       this.p5 = new P5(p5 => { // The sketch.
-        p5.setup = this.setup(p5);
-        p5.draw = this.draw(p5);
+        p5.setup = this._setup(p5);
+        p5.draw = this._draw(p5);
       }, canvasId);
 
-      this.resolution = new Resolution(dimensions.width / simplify, dimensions.height / simplify); // The resolution of the structured grid.
-      this._plat = new Plat(this.dimensions, this.resolution);
+      this.display = new Grid(canvasSize, {
+        width: canvasSize.width / scale,
+        height: canvasSize.height / scale,
+      });
 
-      this.topography = new Topography(this.resolution, this.dimensions, preset); // The topography...
+      this.topography = new Contours(this.display, preset); // The topography...
     }
 
-    /**
-     *
-     * @param {Object} topographyConfig
-     * @returns {TopographySketch}
-     */
-    static getGoldsteinInstance ({
-      canvasId, dimensions, simplify, 
-    }) {
-      return new this({
-        canvasId, dimensions, simplify, preset: GOLDSTEIN, 
-      })
-    }
 
     /**
-     *
+     * Returns a sketch with random topography.
      * @param {Object} topographyConfig
      * @returns {TopographySketch}
      */
     static getRandomInstance ({
-      canvasId, dimensions, simplify, 
+      canvasId, canvasSize, scale, 
     }) {
       return new this({
-        canvasId, dimensions, simplify, preset: RANDOM, 
+        canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.RANDOM, 
       })
     }
 
     /**
-     *
+     * Returns a sketch with no topography.
      * @param {Object} topographyConfig
      * @returns {TopographySketch}
      */
     static getEmptyInstance ({
-      canvasId, dimensions, simplify, 
+      canvasId, canvasSize, scale, 
     }) {
       return new this({
-        canvasId, dimensions, simplify, preset: EMPTY, 
+        canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.EMPTY, 
       })
     }
 
-    get plat () {
-      return this._plat
+    /**
+     * Erases and restarts the drawing.
+     */
+    reset(config) {
+      if (config.scale) {
+        const { scale } = config;
+        const canvasSize = this.display.dimensions;
+
+        this.display = new Grid(canvasSize, {
+          width: canvasSize.width / scale,
+          height: canvasSize.height / scale,
+        });
+        this.topography = new Contours(this.display, THRESHOLD_OPTIONS.EMPTY);
+      } else {
+        this.topography.reset();
+      }
+
+      this.p5.redraw();
+    }
+
+    /**
+     * Replaces the drawiing with random topography.
+     */
+    randomize() {
+      this.topography.randomize();
+      this.p5.redraw();
+    }
+
+    // ?? should the second parameter be an object that accepts: force, radius, direction (up vs down)
+    raiseAtPoint (pointOnCanvas, force = 0) {
+      const { x, y } = pointOnCanvas;
+
+      const raisedDisplayCell = this._raisePointInTopography({ x, y }, force);
+      // Calling redraw ensures the drawing loop is called only when necessary
+      this.p5.redraw();
+
+      return raisedDisplayCell
     }
 
     /**
      * Get the coordinates of a cell based on the given mouse position.
+     *
      * @param {Object} mousePosition Coordinates of the mouse.
      * @returns {Object} Coordinates of the cell.
      */
-    getCell (mousePosition) {
-      return this.plat.getCell(mousePosition)
+    getContainingCell(mousePosition) {
+      return this.display.getContainingCellCoordinates(mousePosition)
     }
 
-    addPoint () {
-      console.log('Adding point not yet implemented.');
+    addPoint({ x, y }) {
+      console.log('Not yet implemented', x, y);
     }
 
-    setup (p5) {
+    /** p5 setup for the sketch. Runs once. */
+    _setup (p5) {
       return () => {
-        p5.createCanvas(this.dimensions.width, this.dimensions.height);
+        p5.createCanvas(this.canvasSize.width, this.canvasSize.height);
         p5.noLoop();
         p5.colorMode(p5.HSB);
-        this.resetStrokeWeight();
+        this._resetStrokeWeight();
       }
     }
 
-    draw (p5) {
+    /** p5 drawing loop for the sketch. */
+    _draw (p5) {
       return () => {
         p5.push();
 
-        this.drawBackground();
-        this.drawTopography();
-        this.drawForeground();
+        this._drawBackground();
+        this._drawTopography();
+        this._drawForeground();
 
         p5.pop();
       }
@@ -3144,61 +3296,65 @@
     /**
      * Draws sketch elements that render below (z-index) the topography.
      */
-    drawBackground () {
+    _drawBackground () {
       this.p5.background('white');
     }
 
     /**
      * Draws sketch elements that render above (z-index) the topography.
      */
-    drawForeground () {
+    _drawForeground () {
+      // if (DRAW_INTERACTVE_DOM) this.drawInteractiveDOM()
     }
 
-    // drawInteractiveDOM () {
-    //   const els = document.getElementsByClassName('topography-block')
-    //
-    //   els.forEach(el => {
-    //     const rect = el.getBoundingClientRect()
-    //     const {
-    //       x, y, width, height, 
-    //     } = rect
-    //
-    //     const padding = 40
-    //
-    //     this.p5.rect(x + window.scrollX - padding, y + window.scrollY - padding, width + padding * 2, height + padding * 2)
-    //   })
-    // }
-
-    update (mousePosition, force = 0) {
-      const { x, y } = mousePosition;
-
-      this._updateMatrix({ x, y }, force);
-      this.p5.redraw();
-    }
-
-    _updateMatrix (mousePosition, force) {
+    /**
+     * Applies a force to the grid point that is closest to the given canvas point.
+     *
+     * @returns Coordinates of the display cell that was raised.
+     */
+    _raisePointInTopography (canvasPoint, force) {
       // TODO: use better logic to find the closest gridpoint(or center) and change it there
       // TODO: add distributed changes
+      
+      // From the given point, get the closest grid column
       let x;
-      for (let i = 0; i < this.resolution.columnCount; i++) {
-        if (mousePosition.x < (this.dimensions.width / this.resolution.columnCount * i)) {
+      for (let i = 0; i < this.display.width; i++) {
+        if (canvasPoint.x < (this.canvasSize.width / this.display.width * i)) {
           x = i - 1;
           break
         }
       }
 
+      // From the given point, get the closest grid row
       let y;
-      for (let i = 0; i < this.resolution.rowCount; i++) {
-        if (mousePosition.y < (this.dimensions.height / this.resolution.rowCount * i)) {
+      for (let i = 0; i < this.display.height; i++) {
+        if (canvasPoint.y < (this.canvasSize.height / this.display.height * i)) {
           y = i - 1;
           break
         }
       }
 
       this.topography.raise({ x, y }, force);
+
+      return { x, y }
     }
 
-    makeMultipolygon (mp) {
+    /**
+     * Draws the given polygon.
+     */
+    _drawPolygon (polygon) {
+      polygon.forEach(coor => {
+        const [ x, y ] = coor;
+        const canvasCoor = this._getCanvasCoordinate(x, y);
+
+        this.p5.vertex(canvasCoor.x, canvasCoor.y);
+      });
+    }
+
+    /*8
+     * Draws the given multipolygon.
+     */
+    _drawMultipolygon (mp) {
       const p5 = this.p5;
 
       mp.forEach(polygon => {
@@ -3206,12 +3362,12 @@
 
         p5.beginShape();
 
-        this.makePolygon(positiveSpace);
+        this._drawPolygon(positiveSpace);
 
         polygon.forEach(negativeSpace => {
           p5.beginContour();
 
-          this.makePolygon(negativeSpace);
+          this._drawPolygon(negativeSpace);
 
           p5.endContour();
         });
@@ -3220,45 +3376,45 @@
       });
     }
 
-    getCanvasCoordinate (matrixX, matrixY) {
+    /**
+     * Returns the coordinate of the HTML canvas that corresponds to the given matrix coordinates.
+     */
+    _getCanvasCoordinate (matrixX, matrixY) {
       return {
-        x: Math.floor(this.p5.map(matrixX, 0, this.resolution.columnCount, 0, this.dimensions.width)),
-        y: Math.floor(this.p5.map(matrixY, 0, this.resolution.rowCount, 0, this.dimensions.height)),
+        x: Math.floor(this.p5.map(matrixX, 0, this.display.width, 0, this.canvasSize.width)),
+        y: Math.floor(this.p5.map(matrixY, 0, this.display.height, 0, this.canvasSize.height)),
       }
     }
 
-    makePolygon (polygon) {
-      polygon.forEach(coor => {
-        const [ x, y ] = coor;
-        const canvasCoor = this.getCanvasCoordinate(x, y);
+    /**
+     * Draws a dotted grid. One dot to denote the corner intersections of grid cells.
+     */
+    _drawGrid () {
+      this.p5.stroke(0, 0, 90);
+      this.p5.fill(0, 0, 90);
 
-        this.p5.vertex(canvasCoor.x, canvasCoor.y);
-      });
-    }
+      this.topography.matrix.forEach((z, i) => {
+        const x = i % this.display.width;
+        const y = i / this.display.width;
 
-    makeMatrix (matrix) {
-      matrix.forEach((z, i) => {
-        const x = i % this.resolution.columnCount;
-        const y = i / this.resolution.columnCount;
-
-        const canvasCoor = this.getCanvasCoordinate(x, y);
+        const canvasCoor = this._getCanvasCoordinate(x, y);
 
         this.p5.circle(canvasCoor.x, canvasCoor.y, z);
       });
     }
 
-    drawGrid () {
-      this.p5.stroke(0, 0, 90);
-      this.p5.fill(0, 0, 90);
-      this.makeMatrix(fill(new Array(this.topography.matrixArea), 2));
-    }
-
-    resetStrokeWeight () {
+    /*8
+     * Resets stroke weight.
+     */
+    _resetStrokeWeight () {
       const defaultStroke = 0.2;
       this.p5.strokeWeight(defaultStroke);
     }
 
-    drawTopography () {
+    /**
+     * Draws the topography contours.
+     */
+    _drawTopography () {
       const p5 = this.p5;
       const START_COLOR = [ 
         0,
@@ -3276,40 +3432,194 @@
       };
       const stroke = color => p5.stroke( color);
 
-      const contours = this.topography.getIsobands();
+      const contours = this.topography.isobands;
 
       contours.forEach((contour, i, contours) => {
         const color = p5.lerpColor(p5.color(...START_COLOR), p5.color(...END_COLOR), i / contours.length);
         fill(color);
         stroke(color);
-        this.resetStrokeWeight();
+        this._resetStrokeWeight();
 
         if (i === 0) p5.noStroke();
         // if (i === 1) p5.strokeWeight(1)
 
-        this.makeMultipolygon(contour.coordinates || contour.geometry);
+        this._drawMultipolygon(contour.coordinates || contour.geometry);
       });
+    }
+  }
+
+  /**
+   * Manages the connection between mouse movements, topography contruction, and the speed/ force of
+   * that construction
+   */
+  class MouseTopography {
+    constructor({
+      canvasId,
+      canvasSize,
+      scale,
+      force,
+      decay,
+      ping,
+      interfaceEl,
+    }) {
+      this.topographySketch = Sketch.getEmptyInstance({
+        canvasId,
+        canvasSize,
+        scale,
+      });
+
+      this.canvasSize = canvasSize;
+
+      // Update the drawing at a constant interval
+      this.updateIntervalId = setInterval(this.update.bind(this), ping);
+
+      this.decay = decay;
+      this.force = force;
+
+      this.mouse = new MouseTrackingManager(interfaceEl);
+
+      this.currHoveredCell = null;
+      this.prevHoveredCell = null;
+
+      this.hoverStartTime = null;
+    }
+
+    updatePing(ping) {
+      clearInterval(this.updateIntervalId);
+
+      this.updateIntervalId = setInterval(this.update.bind(this), ping);
+    }
+
+    updateDecay(decay) {
+      this.decay = decay;
+    }
+
+    updateForce(force) {
+      this.force = force;
+    }
+
+    /** Whether the mouse has moved between display cells. */
+    get mouseCellChanged() {
+      if (!this.prevHoveredCell && !this.currHoveredCell) return false
+
+      return !isEqual(this.prevHoveredCell, this.currHoveredCell)
+    }
+
+    /** Returns the amount of time the user spends hovering over a specific display cell. */
+    get timeSpentHoveringOverCell() {
+      if (this.hoverStartTime === undefined) return null
+
+      return new Date().getTime() - this.hoverStartTime
+    }
+
+    /** Returns whether the user has moved their mouse to a new cell. */
+    get mouseMovedToDifferentCell() {
+      if (!this.prevHoveredCell) return true
+      if (!this.currHoveredCell) return this.currHoveredCell !== this.prevHoveredCell
+
+      return !(
+        this.currHoveredCell.x === this.prevHoveredCell.x &&
+        this.currHoveredCell.y === this.prevHoveredCell.y
+      )
+    }
+
+    /** 
+     * Updates the topography drawing. Adds topography (amount dependent on applied force) based
+     * on the location of the mouse. If the mouse is is hovering within a display cell, the force decays.
+     * Otherwise, the force is constant while the mouse is moving between cells.
+     */
+    update() {
+      if (this.currHoveredCell) {
+        const hoverTime = this.timeSpentHoveringOverCell || 0;
+
+        // Gradually lessen the force of drawing during the decay period while the user doesn't move the mouse
+        let hoverForce = (this.decay - hoverTime) / this.decay;
+        if (hoverForce < 0) hoverForce = 0;
+
+        // If the mouse has moved, apply the full force; otherwise, apply the decaying force.
+        const force = this.mouseMovedToDifferentCell
+          ? this.force
+          : (hoverForce * this.force) / 6; // arbitrary fraction of the default
+
+        this.currHoveredCell = this.topographySketch.raiseAtPoint(this.mouse.getMappedMousePosition(this.canvasSize), force || 0);
+      }
+
+      this._updateHoveredCell();
+    }
+
+    /** Update the mouse position via the given mouse event's data */
+    updateMousePosition(e) {
+      this.mouse.updateMousePosition(e);
+      this._updateHoveredCell(e);
+    }
+
+    /** Updates which display cell is currently hovered by the user. */
+    _updateHoveredCell(e = null) {
+      this.prevHoveredCell = this.currHoveredCell;
+
+      if (e !== null) {
+        this.currHoveredCell = this.topographySketch.getContainingCell(this.mouse.getMappedMousePosition(this.canvasSize));
+        if (this.mouseCellChanged) {
+          this.resetHoveringTimer();
+        }
+      }
+    }
+
+    /** Resets the timer that keeps track of how long the user is hovering over a display cell. */
+    resetHoveringTimer() {
+      this.hoverStartTime = new Date().getTime();
+    }
+
+    /** Erases the topography and restarts the sketch with a new configuration. */
+    resetSketch(config) {
+      this.topographySketch.reset(config);
+    }
+
+    /** Randomizes the topography. */
+    randomizeSketch() {
+      this.topographySketch.randomize();
+    }
+
+    handleClick(e) {
+      console.log('Not yet implemented', e);
+    }
+
+    /** Turns off updates to the sketch and interactions with the sketch. */
+    disable() {
+      this.mouse.disable();
+      this.currHoveredCell = null;
+      this.prevHoveredCell = null;
+      this.hoverStartTime = null;
+    }
+
+    /** Removes any variables not cleaned up by the garbage collector. */
+    kill() {
+      clearInterval(this.updateIntervalId);
     }
   }
 
   //
 
-  const DEFAULT_SIMPLIFY_COEFFICIENT = 20; // Degree of polygon simplification
+  const DEFAULT_SCALE_COEFFICIENT = 20; // Degree of polygon simplification
   const DEFAULT_PING_TIME = 15; // Amount of time(ms) between updates, in milliseconds.
   const DEFAULT_FORCE = 8; // The amount of 'z' added to a point during mouse movement.
   const DEFAULT_DECAY_TIME = 2000; // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
 
+  const DEFAULT_INTERFACE_ID = 'default-interface';
+
   var id = 0; // Unique id of of this component // TODO: test that this enables parallel topography instances
+
+  // TODO: clean up contours.js
 
   var script = {
     name: 'VueMouseTopography',
     props: {
       // Degree to which simplification is applied to the contours.
-      simplify: {
+      scale: {
         type: Number,
         required: false,
         default () {
-          return DEFAULT_SIMPLIFY_COEFFICIENT
+          return DEFAULT_SCALE_COEFFICIENT
         },
       },
 
@@ -3339,17 +3649,28 @@
           return DEFAULT_DECAY_TIME
         },
       },
+
+      // The ID of the HTML element that acts as the mouse interface. The element that will be used to track the mouse.
+      interfaceId: {
+        type: String,
+        required: false,
+        default () {
+          return DEFAULT_INTERFACE_ID
+        },
+      },
+
+      paused: {
+        type: Boolean,
+        required: false,
+        default() {
+          return false
+        },
+      },
     },
     data () {
       return {
         sketchId: 'p5-canvas-' + ++id, // Unique id that matches the a child element's id.
-        sketch: undefined, // The p5 sketch.
-        mousePosition: undefined, // Mouse position coordinates relative to the root element's size.
-        prevMousePosition: undefined, // Previous mouse position.
-        mouseCell: undefined, // Coordinates of the resolution cell that the mouse is within.
-        prevMouseCell: undefined, // Previous coordinates of the resolution cell that the mouse was within.
-        updateIntervalId: undefined, // The id of the interval between updates.
-        restingPointerStartTime: undefined,
+        mouseTopo: undefined, // Topography drawing bound to mouse movements
       }
     },
     computed: {
@@ -3363,99 +3684,104 @@
         return Math.ceil(this.$el.clientHeight)
       },
 
-      // Whether or not the mouse has moved since the last rendering update.
-      mouseMoved () {
-        if (!this.mousePosition) { return this.mousePosition !== this.prevMousePosition }
+      topoConfig () {
+        return {
+          canvasId: this.sketchId,
+          canvasSize: { width: this.width, height: this.height },
+          scale: this.scale,
+          decay: this.decay,
+          force: this.force,
+          ping: this.ping,
+          interfaceEl: document.getElementById(this.interfaceId),
+        }
+      },
 
-        return !(
-          this.mousePosition.x === this.prevMousePosition.x &&
-          this.mousePosition.y === this.prevMousePosition.y
-        )
+      /** The element that is the mouse interface for drawing the topography. Any element in the document. */
+      mouseInterfaceEl() {
+        return document.getElementById(this.interfaceId)
+      }, 
+
+      /** The mouse interface's events and handler functions for when each event is triggered */
+      interfaceEventHandlers() {
+        return {
+          mousemove: this.handleMousemove,
+          mouseleave: this.disable,
+          click: this.handleClick,
+        }
+      },
+    },
+    watch: {
+      decay: function(newDecay) {
+        this.mouseTopo.updateDecay(newDecay);
+      },
+      force: function(newForce) {
+        this.mouseTopo.updateForce(newForce);
+      },
+      ping: function(newPing) {
+        this.mouseTopo.updatePing(newPing);
+      },
+      paused: function(newPaused) {
+        newPaused ? this.pause() : this.resume();
       },
     },
     mounted () {
-      const topographyConfig = {
-        canvasId: this.sketchId,
-        dimensions: { width: this.width, height: this.height },
-        simplify: this.simplify,
-      };
-
-      this.sketch = TopographySketch.getEmptyInstance(topographyConfig);
-
-      this.updateIntervalId = setInterval(this.update, this.ping);
+      this.mouseTopo = new MouseTopography(this.topoConfig);
+      this.trackMouse();
     },
     unmounted () {
-      clearInterval(this.updateIntervalId);
+      this.untrackMouse();
+      this.mouseTopo.kill();
     },
     methods: {
-      /**
-       * @param {Event} e A mouse event.
-       * @returns {x: Number, y: Number} Mouse coordinates within this element's DOM box.
-       */
-      getMousePosition (e) {
-        const rect = this.$el.getBoundingClientRect();
-        return {
-          x: e.pageX - rect.x,
-          y: e.pageY + Math.abs(rect.y),
-        }
-      },
-
       handleClick (e) {
-        this.sketch.addPoint(this.getMousePosition(e));
+        this.mouseTopo.handleClick(e);
       },
 
       handleMousemove (e) {
-        this.prevMousePosition = this.mousePosition;
-
-        this.mousePosition = this.getMousePosition(e);
-
-        this.updateMouseCell();
+        this.mouseTopo.updateMousePosition(e);
       },
 
-      updateMouseCell () {
-        this.prevMouseCell = this.mouseCell;
-        this.mouseCell = this.sketch.getCell(this.mousePosition);
-
-        if (this.mouseCellChanged(this.prevMouseCell, this.mouseCell)) {
-          this.restingPointerStartTime = new Date().getTime();
-        }
+      handleMouseleave () {
+        this.disable();
       },
 
-      // The resolution cell that the mouse is hovering over.
-      mouseCellChanged (prevMouseCell, mouseCell) {
-        if (!prevMouseCell && !mouseCell) return false
-
-        return !isEqual(prevMouseCell, mouseCell)
+      pause() {
+        this.untrackMouse();
       },
 
-      /**
-       * Updates the drawing to represent the current mouse position if one exists.
-       */
-      update () {
-        if (this.mousePosition) {
-          const hoverTime = new Date().getTime() - this.restingPointerStartTime;
+      resume() {
+        this.trackMouse();
+      },
 
-          let hoverForce = (this.decay - hoverTime) / this.decay;
-          if (hoverForce < 0) hoverForce = 0;
+      trackMouse() {
+        // ?? should the event listeners capture events (be the first to process before others in the DOM tree)
+        // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#matching_event_listeners_for_removal
+        Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
+          this.mouseInterfaceEl.addEventListener(event, handler, { passive: true });
+        });
+      },
 
-          const force = this.mouseCellChanged(this.prevMouseCell, this.mouseCell)
-            ? this.force
-            : (hoverForce * this.force) / 6; // arbitrary fraction of the default
+      untrackMouse() {
+        Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
+          this.mouseInterfaceEl.removeEventListener(event, handler, { passive: true });
+        });
+      },
 
-          this.sketch.update(this.mousePosition, force || 0);
-        }
+      /** Resets the topography and updates the config. */
+      reset () {
+        this.mouseTopo.resetSketch(this.topoConfig);
+      },
 
-        this.prevMousePosition = this.mousePosition;
-        this.updateMouseCell();
+      /** Randomizes the topography. */
+      randomize() {
+        this.mouseTopo.randomizeSketch();
       },
 
       /**
        * Resets the variables that change the state of the topography.
        */
       disable () {
-        this.restingPointerStartTime = undefined;
-        this.mousePosition = undefined;
-        this.mouseCell = undefined;
+        this.mouseTopo.disable();
       },
     },
   };
@@ -3554,13 +3880,7 @@
     var _c = _vm._self._c || _h;
     return _c("div", {
       staticClass: "topography",
-      on: {
-        click: _vm.handleClick,
-        mousemove: _vm.handleMousemove,
-        mouseleave: function($event) {
-          return _vm.disable()
-        }
-      }
+      attrs: { id: "default-interface" }
     })
   };
   var __vue_staticRenderFns__ = [];
@@ -3580,7 +3900,7 @@
     
 
     
-    var vueMouseTopography = normalizeComponent_1(
+    var VueMouseTopography = normalizeComponent_1(
       { render: __vue_render__, staticRenderFns: __vue_staticRenderFns__ },
       __vue_inject_styles__,
       __vue_script__,
@@ -3595,7 +3915,7 @@
   function install(Vue) {
     if (install.installed) return;
     install.installed = true;
-    Vue.component('vue-mouse-topography', vueMouseTopography);
+    Vue.component('vue-mouse-topography', VueMouseTopography);
   }
 
   // Create module definition for Vue.use()
@@ -3612,7 +3932,7 @@
     GlobalVue.use(plugin);
   }
 
-  exports.default = vueMouseTopography;
+  exports.default = VueMouseTopography;
   exports.install = install;
 
   Object.defineProperty(exports, '__esModule', { value: true });
