@@ -1,13 +1,17 @@
 <template>
   <div id="app">
-    <mouse-topo
-      ref="topo"
-      class="contours"
-      :scale="controls.scale.value"
-      :ping="controls.ping.value"
-      :force="controls.force.value"
-      :decay="controls.decay.value"
-    />
+    <div class="container">
+      <mouse-topo
+        ref="topo"
+        class="contours"
+        :scale="controls.scale.value"
+        :ping="controls.ping.value"
+        :force="controls.force.value"
+        :decay="controls.decay.value"
+        :paused="paused"
+        :interface-id="interfaceId"
+      />
+    </div>
     <table class="controls">
       <thead><tr>Controls</tr></thead>
 
@@ -41,7 +45,25 @@
       <button @click="randomize">
         randomize
       </button>
+      <button @click="paused = true">
+        pause
+      </button>
+      <button @click="paused = false">
+        resume
+      </button>
     </table>
+
+    <div
+      :id="interfaceId"
+      style="position: relative; flex-grow: 1; height: 100%;"
+      class="interface"
+    >
+      <button
+        style="position: absolute;"
+      >
+        test
+      </button>
+    </div>
   </div>
 </template>
 
@@ -79,7 +101,9 @@ export default {
   name: 'App',
   components: { MouseTopo },
   data() {
-    return { controls: CONTROLS }
+    return {
+      paused: false, interfaceId: 'mouse-interface', controls: CONTROLS, 
+    }
   },
   methods: {
     reset () {
@@ -103,9 +127,27 @@ export default {
   display: flex;
 }
 
-#app > .contours {
-  border: 5px solid black;
+.container {
   width: 50%;
-  height: 50%;
+  height: 500px;
+
+  display: flex;
+  flex-direction:column;
+}
+
+.contours {
+  border: 5px solid black;
+  height: 100%;
+}
+
+.interface {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+
+}
+
+.mouse-interface {
+  background-color: #efefff;
 }
 </style>

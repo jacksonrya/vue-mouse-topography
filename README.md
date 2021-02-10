@@ -1,4 +1,10 @@
-# contour-lines
+# vue-mouse-topography
+
+A heatmap of mouse movements in the style of topography.
+
+The interface from which the mouse is tracked can be different from the canvas (default). If a custom interface is used,
+it should exist behind other elements meant for interaction; the interface can't sit atop the DOM because it doesn't
+propogate events down.
 
 ## Project setup
 ```

@@ -1,9 +1,7 @@
 <template>
   <div 
+    id="default-interface"
     class="topography"
-    @click="handleClick"
-    @mousemove="handleMousemove"
-    @mouseleave="handleMouseleave"
   >
     <!-- <div -->
     <!--   :id="sketchId" -->
@@ -19,6 +17,8 @@ const DEFAULT_SCALE_COEFFICIENT = 20 // Degree of polygon simplification
 const DEFAULT_PING_TIME = 15 // Amount of time(ms) between updates, in milliseconds.
 const DEFAULT_FORCE = 8 // The amount of 'z' added to a point during mouse movement.
 const DEFAULT_DECAY_TIME = 2000 // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
+
+const DEFAULT_INTERFACE_ID = 'default-interface'
 
 var id = 0 // Unique id of of this component // TODO: test that this enables parallel topography instances
 
@@ -68,7 +68,15 @@ export default {
       type: String,
       required: false,
       default () {
-        return undefined
+        return DEFAULT_INTERFACE_ID
+      },
+    },
+
+    paused: {
+      type: Boolean,
+      required: false,
+      default() {
+        return false
       },
     },
   },
@@ -97,7 +105,21 @@ export default {
         decay: this.decay,
         force: this.force,
         ping: this.ping,
-        interfaceId: this.interfaceId || this.sketchId,
+        interfaceEl: document.getElementById(this.interfaceId),
+      }
+    },
+
+    /** The element that is the mouse interface for drawing the topography. Any element in the document. */
+    mouseInterfaceEl() {
+      return document.getElementById(this.interfaceId)
+    }, 
+
+    /** The mouse interface's events and handler functions for when each event is triggered */
+    interfaceEventHandlers() {
+      return {
+        mousemove: this.handleMousemove,
+        mouseleave: this.disable,
+        click: this.handleClick,
       }
     },
   },
@@ -111,11 +133,16 @@ export default {
     ping: function(newPing) {
       this.mouseTopo.updatePing(newPing)
     },
+    paused: function(newPaused) {
+      newPaused ? this.pause() : this.resume()
+    },
   },
   mounted () {
     this.mouseTopo = new MouseTopography(this.topoConfig)
+    this.trackMouse()
   },
   unmounted () {
+    this.untrackMouse()
     this.mouseTopo.kill()
   },
   methods: {
@@ -129,6 +156,28 @@ export default {
 
     handleMouseleave () {
       this.disable()
+    },
+
+    pause() {
+      this.untrackMouse()
+    },
+
+    resume() {
+      this.trackMouse()
+    },
+
+    trackMouse() {
+      // ?? should the event listeners capture events (be the first to process before others in the DOM tree)
+      // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#matching_event_listeners_for_removal
+      Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
+        this.mouseInterfaceEl.addEventListener(event, handler, { passive: true })
+      })
+    },
+
+    untrackMouse() {
+      Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
+        this.mouseInterfaceEl.removeEventListener(event, handler, { passive: true })
+      })
     },
 
     /** Resets the topography and updates the config. */
