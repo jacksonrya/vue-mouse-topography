@@ -3,7 +3,7 @@
     <div class="container">
       <mouse-topo
         ref="topo"
-        class="contours"
+        class="contours bordered"
         :scale="controls.scale.value"
         :ping="controls.ping.value"
         :force="controls.force.value"
@@ -56,7 +56,7 @@
     <div
       :id="interfaceId"
       style="position: relative; flex-grow: 1; height: 100%;"
-      class="interface"
+      class="interface bordered"
     >
       <button
         style="position: absolute;"
@@ -136,7 +136,6 @@ export default {
 }
 
 .contours {
-  border: 5px solid black;
   height: 100%;
 }
 
@@ -149,5 +148,9 @@ export default {
 
 .mouse-interface {
   background-color: #efefff;
+}
+
+.bordered {
+  border: 5px solid black;
 }
 </style>

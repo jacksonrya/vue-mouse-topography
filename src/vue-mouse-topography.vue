@@ -3,10 +3,10 @@
     id="default-interface"
     class="topography"
   >
-    <!-- <div -->
-    <!--   :id="sketchId" -->
-    <!--   class="p5&#45;canvas" -->
-    <!-- /> -->
+    <div
+      :id="sketchId"
+      class="p5-canvas"
+    />
   </div>
 </template>
 
@@ -206,6 +206,8 @@ export default {
 
   align-items: center;
   justify-content: center;
+
+  pointer-events: none;
 }
 
 .box-1 {
