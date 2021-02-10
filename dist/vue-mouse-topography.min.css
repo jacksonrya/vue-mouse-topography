@@ -4,6 +4,8 @@
 
   align-items: center;
   justify-content: center;
+
+  pointer-events: none;
 }
 .box-1 {
   width: 200px;

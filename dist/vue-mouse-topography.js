@@ -3878,10 +3878,11 @@
     var _vm = this;
     var _h = _vm.$createElement;
     var _c = _vm._self._c || _h;
-    return _c("div", {
-      staticClass: "topography",
-      attrs: { id: "default-interface" }
-    })
+    return _c(
+      "div",
+      { staticClass: "topography", attrs: { id: "default-interface" } },
+      [_c("div", { staticClass: "p5-canvas", attrs: { id: _vm.sketchId } })]
+    )
   };
   var __vue_staticRenderFns__ = [];
   __vue_render__._withStripped = true;
