@@ -125,6 +125,8 @@ export default {
   height: 100%;
 
   display: flex;
+
+  background: pink;
 }
 
 .container {

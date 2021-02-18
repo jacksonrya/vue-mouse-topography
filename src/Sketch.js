@@ -126,23 +126,21 @@ export default class {
   }
 
   /** p5 drawing loop for the sketch. */
-  _draw (p5) {
+  _draw(p5) {
     return () => {
-      p5.push()
+      p5.clear()
 
       this._drawBackground()
       this._drawTopography()
       this._drawForeground()
-
-      p5.pop()
     }
   }
 
   /**
    * Draws sketch elements that render below (z-index) the topography.
    */
-  _drawBackground () {
-    this.p5.background('white')
+  _drawBackground() {
+    this.p5.background('rgba(0, 0, 0, 0)')
   }
 
   /**
@@ -276,18 +274,19 @@ export default class {
     ]
     const DRAW_MATRIX = false
 
-    const fill = (color = 'white') => {
-      p5.fill('white')
+    const fill = (color = 'rgba(0, 0, 0, 0)') => {
+      p5.fill(color)
       if (STYLE_CHOROPLETH) p5.fill(color)
     }
     const stroke = color => p5.stroke(STYLE_CHOROPLETH ? '#4b4b4b' : color)
 
     const contours = this.topography.isobands
 
+    // This is attempting to draw gradients. extract method for only lines (no fill)
     contours.forEach((contour, i, contours) => {
       const color = p5.lerpColor(p5.color(...START_COLOR), p5.color(...END_COLOR), i / contours.length)
-      fill(color)
-      stroke(color)
+      fill() // color
+      stroke('black') //color
       this._resetStrokeWeight()
 
       if (DRAW_GRID && i === 0) {
