@@ -21,8 +21,9 @@ export default class MouseTrackingManager {
     )
   }
 
-  static getMousePositionWithinEl(e) {
-    const rect = e.srcElement.getBoundingClientRect()
+  static getMousePositionWithinEl(e, el) {
+    // const rect = e.srcElement.getBoundingClientRect()
+    const rect = el.getBoundingClientRect()
     return { x: e.x - rect.x, y: e.y - rect.y }
   }
 
@@ -51,8 +52,7 @@ export default class MouseTrackingManager {
     this.prevMousePos = this.currMousePos
 
     if (e !== null) {
-      // this.interfaceEl = e.srcElement
-      this.currMousePos = this.constructor.getMousePositionWithinEl(e)
+      this.currMousePos = this.constructor.getMousePositionWithinEl(e, this.interfaceEl)
     }
   }
 

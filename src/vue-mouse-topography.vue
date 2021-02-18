@@ -151,7 +151,6 @@ export default {
     },
 
     handleMousemove (e) {
-      console.log(e)
       this.mouseTopo.updateMousePosition(e)
     },
 
@@ -171,13 +170,13 @@ export default {
       // ?? should the event listeners capture events (be the first to process before others in the DOM tree)
       // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#matching_event_listeners_for_removal
       Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
-        this.mouseInterfaceEl.addEventListener(event, handler, { passive: true })
+        this.mouseInterfaceEl.addEventListener(event, handler, { capture: true })
       })
     },
 
     untrackMouse() {
       Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
-        this.mouseInterfaceEl.removeEventListener(event, handler, { passive: true })
+        this.mouseInterfaceEl.removeEventListener(event, handler, { capture: true })
       })
     },
 
