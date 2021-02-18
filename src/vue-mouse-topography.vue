@@ -151,6 +151,7 @@ export default {
     },
 
     handleMousemove (e) {
+      console.log(e)
       this.mouseTopo.updateMousePosition(e)
     },
 
@@ -206,8 +207,6 @@ export default {
 
   align-items: center;
   justify-content: center;
-
-  pointer-events: none;
 }
 
 .box-1 {
