@@ -210,6 +210,16 @@ export default class {
     })
   }
 
+  _drawLinesFromPolygon(pg) {
+    pg.forEach((currCoor, i) => {
+      const [ x1, y1 ] = currCoor
+      const [ x2, y2 ] = i == pg.length - 1 ? pg[0] : pg[i + 1]
+
+      // assumes x is always defined before y in the coordinate object
+      this.p5.line(...Object.values(this._getCanvasCoordinate(x1, y1)), ...Object.values(this._getCanvasCoordinate(x2, y2)))
+    })
+  }
+
   /*8
    * Draws the given multipolygon.
    */
@@ -305,9 +315,10 @@ export default class {
 
     // This is attempting to draw gradients. extract method for only lines (no fill)
     contours.forEach((contour, i) => {
-      const color = p5.lerpColor(p5.color(this.style.background), p5.color(this.style.fill), i / contours.length)
-      fill() // color
-      stroke(this.style.line) //color
+      // const color = p5.lerpColor(p5.color(this.style.background), p5.color(this.style.fill), i / contours.length)
+      fill()
+      stroke(this.style.line)
+      // TODO use push and pop everywhere i reset p5 style variables
       this._resetStrokeWeight()
 
       if (DRAW_GRID && i === 0) {
@@ -318,7 +329,28 @@ export default class {
       if (i === 0) p5.noStroke() && p5.noFill()
       // if (i === 1) p5.strokeWeight(1)
 
-      this._drawMultipolygon(contour.coordinates || contour.geometry)
+      // Draw contours with dashed negative space.
+      // Downside: iterates over all polygons twice
+      //
+      //draw multipolygon fill without any linework
+      //draw base polygon of multipolygon (0 index); no fill solid line
+      //draw inner polygons (1+ indices); dashed line, no fill
+      const mp = contour.coordinates
+      p5.push()
+      p5.noStroke()
+      this._drawMultipolygon(mp)
+      p5.pop()
+
+      p5.push()
+      p5.noFill()
+      mp.forEach(pg => this._drawLinesFromPolygon(pg[0]))
+      p5.pop()
+
+      p5.push()
+      p5.noFill()
+      p5.drawingContext.setLineDash([ 3, 5 ])
+      mp.forEach(pg => pg.forEach((shape, i) => (i == 0 ? null : this._drawLinesFromPolygon(shape))))
+      p5.pop()
     })
 
     if (DRAW_MATRIX) {
