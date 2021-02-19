@@ -224,6 +224,7 @@ export default class {
       this._drawPolygon(positiveSpace)
 
       polygon.forEach(negativeSpace => {
+        // Contouring creates negative space within the polygon.
         p5.beginContour()
 
         this._drawPolygon(negativeSpace)
@@ -309,7 +310,7 @@ export default class {
         p5.noFill()
       }
 
-      if (i === 0) p5.noStroke()
+      if (i === 0) p5.noStroke() && p5.noFill()
       // if (i === 1) p5.strokeWeight(1)
 
       this._drawMultipolygon(contour.coordinates || contour.geometry)
