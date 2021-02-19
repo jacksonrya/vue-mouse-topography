@@ -10,6 +10,7 @@
         :decay="controls.decay.value"
         :paused="paused"
         :interface-id="interfaceId"
+        :topo-style="topoStyle"
       />
     </div>
     <table class="controls">
@@ -102,7 +103,14 @@ export default {
   components: { MouseTopo },
   data() {
     return {
-      paused: false, interfaceId: 'mouse-interface', controls: CONTROLS, 
+      paused: false,
+      interfaceId: 'mouse-interface',
+      controls: CONTROLS,
+      topoStyle: {
+        background: 'blue',
+        fill: 'green',
+        line: 'rgb(255,255,255)',
+      },
     }
   },
   methods: {

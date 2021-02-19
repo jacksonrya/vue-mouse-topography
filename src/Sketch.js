@@ -7,10 +7,19 @@ import Display from './Grid'
 const DEBUG = false
 const DRAW_GRID = DEBUG
 
+const DEF_STYLE = {
+  background: 'rgba(0,0,0,0)',
+  fill: null,
+  line: 'rgb(0,0,0)',
+  lineWidth: 1,
+}
+
 /**
  * Manages the drawing of topography.
  * The drawing goes through a loop, each loop processes the topography data and updates the canvas
  * ONLY if the topography data has changed (done via noLoop() in setup and redraw() as necessary).
+ *
+ * @param style {string} p5 accectable color. https://p5js.org/reference/#/p5/color
  */
 export default class {
   constructor ({
@@ -18,6 +27,7 @@ export default class {
     canvasSize = undefined,
     scale = 30,
     preset = THRESHOLD_OPTIONS.EMPTY, 
+    style,
   }) {
     this.canvasId = canvasId // The element's id for the p5 sketch.
     this.canvasSize = canvasSize // The screen size of the sketch.
@@ -33,6 +43,8 @@ export default class {
     })
 
     this.topography = new Contours(this.display, preset) // The topography...
+
+    this.style = { ...DEF_STYLE, ...style }
   }
 
 
@@ -55,10 +67,13 @@ export default class {
    * @returns {TopographySketch}
    */
   static getEmptyInstance ({
-    canvasId, canvasSize, scale, 
+    canvasId,
+    canvasSize,
+    scale,
+    style,
   }) {
     return new this({
-      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.EMPTY, 
+      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.EMPTY, style,
     })
   }
 
@@ -120,7 +135,7 @@ export default class {
     return () => {
       p5.createCanvas(this.canvasSize.width, this.canvasSize.height)
       p5.noLoop()
-      p5.colorMode(p5.HSB)
+      p5.colorMode(p5.RGB)
       this._resetStrokeWeight()
     }
   }
@@ -140,7 +155,7 @@ export default class {
    * Draws sketch elements that render below (z-index) the topography.
    */
   _drawBackground() {
-    this.p5.background('rgba(0, 0, 0, 0)')
+    this.p5.background(this.style.background)
   }
 
   /**
@@ -274,7 +289,7 @@ export default class {
     ]
     const DRAW_MATRIX = false
 
-    const fill = (color = 'rgba(0, 0, 0, 0)') => {
+    const fill = (color = this.style.fill ?? this.style.background) => {
       p5.fill(color)
       if (STYLE_CHOROPLETH) p5.fill(color)
     }
@@ -286,7 +301,7 @@ export default class {
     contours.forEach((contour, i, contours) => {
       const color = p5.lerpColor(p5.color(...START_COLOR), p5.color(...END_COLOR), i / contours.length)
       fill() // color
-      stroke('black') //color
+      stroke(this.style.line) //color
       this._resetStrokeWeight()
 
       if (DRAW_GRID && i === 0) {

@@ -3,6 +3,7 @@ import isEqual from 'lodash-es/isEqual.js'
 import MouseTrackingManager from './MouseTrackingManager'
 import Sketch from './Sketch'
 
+
 /**
  * Manages the connection between mouse movements, topography contruction, and the speed/ force of
  * that construction
@@ -16,11 +17,13 @@ export class MouseTopography {
     decay,
     ping,
     interfaceEl,
+    style,
   }) {
     this.topographySketch = Sketch.getEmptyInstance({
       canvasId,
       canvasSize,
       scale,
+      style,
     })
 
     this.canvasSize = canvasSize

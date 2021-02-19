@@ -80,6 +80,14 @@ export default {
         return false
       },
     },
+
+    topoStyle: {
+      type: Object,
+      required: false,
+      default() {
+        return {}
+      },
+    },
   },
   data () {
     return {
@@ -111,6 +119,7 @@ export default {
         force: this.force,
         ping: this.ping,
         interfaceEl: document.getElementById(this.interfaceId),
+        style: this.topoStyle,
       }
     },
 
