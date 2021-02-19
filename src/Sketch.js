@@ -213,7 +213,7 @@ export default class {
   /*8
    * Draws the given multipolygon.
    */
-  _drawMultipolygon (mp) {
+  _drawMultipolygon(mp) {
     const p5 = this.p5
 
     mp.forEach(polygon => {
@@ -224,8 +224,10 @@ export default class {
       this._drawPolygon(positiveSpace)
 
       p5.push()
-      polygon.forEach(negativeSpace => {
-        p5.noFill()
+      p5.noFill()
+      polygon.forEach((negativeSpace, i) => {
+        if (i == 0) return
+
         // Contouring creates negative space within the polygon.
         p5.beginContour()
 
@@ -302,8 +304,8 @@ export default class {
     const contours = this.topography.isobands
 
     // This is attempting to draw gradients. extract method for only lines (no fill)
-    contours.forEach((contour, i, contours) => {
-      const color = p5.lerpColor(p5.color(...START_COLOR), p5.color(...END_COLOR), i / contours.length)
+    contours.forEach((contour, i) => {
+      const color = p5.lerpColor(p5.color(this.style.background), p5.color(this.style.fill), i / contours.length)
       fill() // color
       stroke(this.style.line) //color
       this._resetStrokeWeight()
