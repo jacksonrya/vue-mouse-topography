@@ -223,7 +223,9 @@ export default class {
 
       this._drawPolygon(positiveSpace)
 
+      p5.push()
       polygon.forEach(negativeSpace => {
+        p5.noFill()
         // Contouring creates negative space within the polygon.
         p5.beginContour()
 
@@ -231,6 +233,7 @@ export default class {
 
         p5.endContour()
       })
+      p5.pop()
 
       p5.endShape()
     })
