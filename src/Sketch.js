@@ -305,7 +305,7 @@ export default class {
     ]
     const DRAW_MATRIX = false
 
-    const fill = (color = this.style.fill ?? this.style.background) => {
+    const fill = (color = this.style.fill !== null ? this.style.fill : this.style.background) => {
       p5.fill(color)
       if (STYLE_CHOROPLETH) p5.fill(color)
     }
