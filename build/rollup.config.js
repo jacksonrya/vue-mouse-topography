@@ -38,8 +38,8 @@ export default {
   ],
   plugins: [
     peerDepsExternal(),
-    css({ output: 'vue-mouse-topography.min.css' }),
-    vue({ css: false }),
+    // css({ output: 'vue-mouse-topography.min.css' }),
+    vue({ css: true }),
     nodeResolve(),
     commonjs(),
   ],
