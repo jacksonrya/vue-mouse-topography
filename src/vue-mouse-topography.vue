@@ -2,6 +2,7 @@
   <div 
     id="default-interface"
     class="topography"
+    :class="{ noninteractive: !usingDefaultInterface }"
   >
     <div
       :id="sketchId"
@@ -87,6 +88,10 @@ export default {
     }
   },
   computed: {
+    usingDefaultInterface() {
+      return this.interfaceId == DEFAULT_INTERFACE_ID
+    },
+
     // Width of this component's root element.
     width () {
       return Math.ceil(this.$el.clientWidth)
@@ -235,5 +240,9 @@ export default {
 .p5-canvas .canvas {
   width: 100%;
   height: 100%;
+}
+
+.noninteractive {
+  pointer-events: none;
 }
 </style>
