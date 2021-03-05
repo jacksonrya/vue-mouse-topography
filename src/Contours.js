@@ -86,7 +86,7 @@ export class Contours {
     this._randomizeMatrix()
   }
 
-  raise ({ x, y }, zDelta = 100, density = 4) {
+  raise({ x, y }, zDelta = 100, density = 4) {
     // calculate distances to closest nodes
     const pos = this._getMatrixIndex(x, y)
     // this._matrix[pos] += zDelta

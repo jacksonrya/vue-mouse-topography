@@ -7,46 +7,85 @@ import Display from './Grid'
 const DEBUG = false
 const DRAW_GRID = DEBUG
 
+export class Sketcher {
+  constructor(options) {
+    this.canvas = new Canvas(options.canvasSize, options.canvasId)
+
+    this.p5 = new P5(p5 => {p5.setup = Sketch.setup(p5, this.canvas.size)}, this.canvas.id)
+    this.sketch = new Sketch(this.p5, this.canvas, options)
+
+    this.p5.setup = this.sketch.setup()
+    this.p5.draw = this.sketch.draw()
+
+    this.sketch.p5 = this.p5
+  }
+}
+
+export class Canvas {
+  constructor(size, id = 'p5-canvas', scale = 30) {
+    this.size = size
+    this.id = id
+
+    this.sketch = undefined
+
+    // ?? Create constructor for display that only requires size and scale?
+    this.display = new Display(this.size, {
+      width: this.size.width / scale,
+      height: this.size.height / scale,
+    })
+  }
+
+  initSketch(sketchOptions) {
+    // TODO: the sketch should keep track of the sketch settings? force, decay etc. are not attached to sketch's "this"
+    // this.sketch = new P5(p5 => new Sketch(p5, this, sketchOptions), this.canvasId)
+  }
+
+  /**
+   * Get the coordinates of a cell based on the given mouse position.
+   *
+   * @param {Object} mousePosition Coordinates of the mouse.
+   * @returns {Object} Coordinates of the cell.
+   */
+  getContainingCell(mousePosition) {
+    return this.display.getContainingCellCoordinates(mousePosition)
+  }
+}
+
 /**
  * Manages the drawing of topography.
  * The drawing goes through a loop, each loop processes the topography data and updates the canvas
  * ONLY if the topography data has changed (done via noLoop() in setup and redraw() as necessary).
  */
-export default class {
-  constructor ({
-    canvasId = 'p5-canvas',
-    canvasSize = undefined,
-    scale = 30,
-    preset = THRESHOLD_OPTIONS.EMPTY, 
-  }) {
-    this.canvasId = canvasId // The element's id for the p5 sketch.
-    this.canvasSize = canvasSize // The screen size of the sketch.
+class Sketch {
+  constructor (p5, canvas, { preset = THRESHOLD_OPTIONS.EMPTY }) {
+    this.canvasSize = canvas.size // The screen size of the sketch.
+    this.display = canvas.display
 
-    this.p5 = new P5(p5 => { // The sketch.
-      p5.setup = this._setup(p5)
-      p5.draw = this._draw(p5)
-    }, canvasId)
+    this.p5 = p5
+    // this.p5.setup = this.setup
+    // this.p5.draw = this.draw
 
-    this.display = new Display(canvasSize, {
-      width: canvasSize.width / scale,
-      height: canvasSize.height / scale,
-    })
+
+    // this.p5 = new P5(p5 => { // The sketch.
+    //   p5.setup = this._setup(p5)
+    //   p5.draw = this._draw(p5)
+    // }, canvasId)
+
+    // this.display = new Display(canvasSize, {
+    //   width: canvasSize.width / scale,
+    //   height: canvasSize.height / scale,
+    // })
 
     this.topography = new Contours(this.display, preset) // The topography...
   }
-
 
   /**
    * Returns a sketch with random topography.
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getRandomInstance ({
-    canvasId, canvasSize, scale, 
-  }) {
-    return new this({
-      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.RANDOM, 
-    })
+  static getRandomInstance ({ scale }) {
+    return new this({ scale, preset: THRESHOLD_OPTIONS.RANDOM })
   }
 
   /**
@@ -54,12 +93,8 @@ export default class {
    * @param {Object} topographyConfig
    * @returns {TopographySketch}
    */
-  static getEmptyInstance ({
-    canvasId, canvasSize, scale, 
-  }) {
-    return new this({
-      canvasId, canvasSize, scale, preset: THRESHOLD_OPTIONS.EMPTY, 
-    })
+  static getEmptyInstance ({ scale }) {
+    return new this({ scale, preset: THRESHOLD_OPTIONS.EMPTY })
   }
 
   /**
@@ -101,34 +136,33 @@ export default class {
     return raisedDisplayCell
   }
 
-  /**
-   * Get the coordinates of a cell based on the given mouse position.
-   *
-   * @param {Object} mousePosition Coordinates of the mouse.
-   * @returns {Object} Coordinates of the cell.
-   */
-  getContainingCell(mousePosition) {
-    return this.display.getContainingCellCoordinates(mousePosition)
-  }
-
   addPoint({ x, y }) {
     console.log('Not yet implemented', x, y)
   }
 
   /** p5 setup for the sketch. Runs once. */
-  _setup (p5) {
+  setup() {
     return () => {
-      p5.createCanvas(this.canvasSize.width, this.canvasSize.height)
+      this.p5.createCanvas(this.canvasSize.width, this.canvasSize.height)
+      this.p5.noLoop()
+      this.p5.colorMode(this.p5.HSB)
+      // this._resetStrokeWeight()
+    }
+    // this.constructor.setup(this.p5, this.canvas.size)
+  }
+
+  static setup(p5, canvasSize) {
+    return () => {
+      p5.createCanvas(canvasSize.width, canvasSize.height)
       p5.noLoop()
       p5.colorMode(p5.HSB)
-      this._resetStrokeWeight()
     }
   }
 
   /** p5 drawing loop for the sketch. */
-  _draw(p5) {
+  draw() {
     return () => {
-      p5.clear()
+      this.p5.clear()
 
       this._drawBackground()
       this._drawTopography()
@@ -258,7 +292,7 @@ export default class {
   /**
    * Draws the topography contours.
    */
-  _drawTopography () {
+  _drawTopography() {
     const p5 = this.p5
 
     const STYLE_CHOROPLETH = false

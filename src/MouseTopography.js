@@ -1,29 +1,34 @@
+/* eslint-disable no-unused-vars */
 import isEqual from 'lodash-es/isEqual.js'
 
 import MouseTrackingManager from './MouseTrackingManager'
-import Sketch from './Sketch'
+import { Canvas, Sketcher } from './Sketch'
 
 /**
  * Manages the connection between mouse movements, topography contruction, and the speed/ force of
  * that construction
  */
 export class MouseTopography {
-  constructor({
-    canvasId,
-    canvasSize,
-    scale,
-    force,
-    decay,
-    ping,
-    interfaceEl,
-  }) {
-    this.topographySketch = Sketch.getEmptyInstance({
+  constructor(options) {
+    const {
       canvasId,
       canvasSize,
       scale,
-    })
+      force,
+      decay,
+      ping,
+      interfaceEl,
+    } = options
+    this.sketcher = new Sketcher(options)
+    this.canvas = this.sketcher.canvas
+    
+    // this.topographySketch = this.canvas.emptySketch({ scale })
 
-    this.canvasSize = canvasSize
+    // this.topographySketch = Sketch.getEmptyInstance({
+    //   canvasId,
+    //   canvasSize,
+    //   scale,
+    // })
 
     // Update the drawing at a constant interval
     this.updateIntervalId = setInterval(this.update.bind(this), ping)
@@ -96,7 +101,7 @@ export class MouseTopography {
         ? this.force
         : (hoverForce * this.force) / 6 // arbitrary fraction of the default
 
-      this.currHoveredCell = this.topographySketch.raiseAtPoint(this.mouse.getMappedMousePosition(this.canvasSize), force || 0)
+      this.currHoveredCell = this.sketcher.sketch.raiseAtPoint(this.mouse.getMappedMousePosition(this.canvas.size), force || 0)
     }
 
     this._updateHoveredCell()
@@ -113,7 +118,7 @@ export class MouseTopography {
     this.prevHoveredCell = this.currHoveredCell
 
     if (e !== null) {
-      this.currHoveredCell = this.topographySketch.getContainingCell(this.mouse.getMappedMousePosition(this.canvasSize))
+      this.currHoveredCell = this.canvas.getContainingCell(this.mouse.getMappedMousePosition(this.canvas.size))
       if (this.mouseCellChanged) {
         this.resetHoveringTimer()
       }
@@ -127,12 +132,12 @@ export class MouseTopography {
 
   /** Erases the topography and restarts the sketch with a new configuration. */
   resetSketch(config) {
-    this.topographySketch.reset(config)
+    this.sketcher.sketch.reset(config)
   }
 
   /** Randomizes the topography. */
   randomizeSketch() {
-    this.topographySketch.randomize()
+    this.sketcher.sketch.randomize()
   }
 
   handleClick(e) {
