@@ -6,9 +6,9 @@ module.exports = {
     'eslint:recommended',
     '@jacksonrya/eslint-config-standard', 
   ],
-  'parserOptions': {'parser': 'babel-eslint'},
+  'parserOptions': { 'parser': 'babel-eslint' },
   'rules': {
     'no-debugger': 1,
-    "space-infix-ops": 2,
+    'space-infix-ops': 2,
   },
 };

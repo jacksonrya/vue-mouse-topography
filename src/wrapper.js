@@ -6,7 +6,7 @@ import VueMouseTopography from './vue-mouse-topography.vue'
 export function install(Vue) {
   if (install.installed) return;
   install.installed = true;
-  Vue.component('vue-mouse-topography', VueMouseTopography);
+  Vue.component('VueMouseTopography', VueMouseTopography);
 }
 
 // Create module definition for Vue.use()
