@@ -31,30 +31,30 @@
     "lint": "vue-cli-service lint"
   },
   "peerDependencies": {
-    "vue": "^2.6.12"
+    "vue": "^2.6.14"
   },
   "dependencies": {
-    "core-js": "^3.6.5",
-    "d3-contour": "^2.0.0",
-    "lodash-es": "^4.17.20",
-    "p5": "^1.2.0"
+    "core-js": "^3.18.0",
+    "d3-contour": "^3.0.1",
+    "lodash-es": "^4.17.21",
+    "p5": "^1.4.0"
   },
   "devDependencies": {
-    "@jacksonrya/eslint-config-standard": "^1.0.6",
-    "@rollup/plugin-commonjs": "^17.0.0",
-    "@rollup/plugin-node-resolve": "^11.1.0",
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "^3.1.1",
-    "@vue/cli-service": "^3.12.1",
+    "@jacksonrya/eslint-config-standard": "^1.1.0",
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@vue/cli-plugin-babel": "~4.5.13",
+    "@vue/cli-plugin-eslint": "^4.5.13",
+    "@vue/cli-service": "^4.5.13",
     "babel-eslint": "^10.1.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-vue": "^7.5.0",
-    "rollup": "^2.38.0",
+    "eslint": "6.8.0",
+    "eslint-plugin-vue": "^7.18.0",
+    "rollup": "^2.56.3",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
-    "rollup-plugin-vue": "^4.7.2",
-    "vue": "^2.6.12",
-    "vue-template-compiler": "^2.6.12"
+    "rollup-plugin-vue": "^6.0.0",
+    "vue": "^2.6.14",
+    "vue-template-compiler": "^2.6.14"
   },
   "browserslist": [
     "> 1%",
