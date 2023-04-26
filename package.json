@@ -23,7 +23,7 @@
   "module": "dist/vue-mouse-topography.esm.js",
   "unpkg": "dist/vue-mouse-topography.min.js",
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
     "build": "rollup --config build/rollup.config.js",
     "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-mouse-topography.umd.js",
     "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-mouse-topography.esm.js",
