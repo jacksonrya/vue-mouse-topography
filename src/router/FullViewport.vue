@@ -33,7 +33,10 @@ export default {
   components: { MouseTopo },
   data() {
     return {
-      paused: false, interfaceId: 'mouse-interface', controls: CONTROLS, 
+      paused: false,
+      interfaceId: 'mouse-interface',
+      controls: CONTROLS,
+      showControls: false,
     }
   },
   methods: {
@@ -43,6 +46,9 @@ export default {
     randomize () {
       this.$refs.topo.randomize()
     },
+    toggleShowControls() {
+      this.showControls = !this.showControls
+    },
   },
 }
 
@@ -50,10 +56,10 @@ export default {
 
 <template>
   <div class="home-container">
-    <div class="container">
+    <div class="topo-container">
       <mouse-topo
         ref="topo"
-        class="contours bordered"
+        class="contours"
         :scale="controls.scale.value"
         :ping="controls.ping.value"
         :force="controls.force.value"
@@ -62,71 +68,94 @@ export default {
         :interface-id="interfaceId"
       />
     </div>
-    <table class="controls">
-      <thead><tr>Controls</tr></thead>
 
-      <tbody>
-        <tr
-          v-for="(control, name) in controls"
-          :key="name"
-        >
-          <td><label for="name">{{ name }} ({{ control.units || '' }})</label></td>
-          <td>
-            <input
-              id="name"
-              v-model.number="control.value"
-              type="range"
-              name="name"
-              :min="control.min"
-              :max="control.max"
-            >
-          </td>
-          <td>
-            <div class="control-value">
-              {{ control.value }}
-            </div>
-          </td>
-        </tr>
-      </tbody>
+    <div class="controls-container">
+      <button @click="toggleShowControls">
+        {{ showControls ? 'close' : 'open' }}
+      </button>
 
-      <button @click="reset">
-        reset
-      </button>
-      <button @click="randomize">
-        randomize
-      </button>
-      <button @click="paused = true">
-        pause
-      </button>
-      <button @click="paused = false">
-        resume
-      </button>
-    </table>
+      <table
+        v-show="showControls"
+        class="controls"
+      >
+        <thead><tr>Controls</tr></thead>
+
+        <tbody>
+          <tr
+            v-for="(control, name) in controls"
+            :key="name"
+          >
+            <td><label for="name">{{ name }} ({{ control.units || '' }})</label></td>
+            <td>
+              <input
+                id="name"
+                v-model.number="control.value"
+                type="range"
+                name="name"
+                :min="control.min"
+                :max="control.max"
+              >
+            </td>
+            <td>
+              <div class="control-value">
+                {{ control.value }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+        <button @click="reset">
+          reset
+        </button>
+        <button @click="randomize">
+          randomize
+        </button>
+        <button @click="paused = true">
+          pause
+        </button>
+        <button @click="paused = false">
+          resume
+        </button>
+      </table>
+    </div>
 
     <div
       :id="interfaceId"
-      style="position: relative; flex-grow: 1; height: 100%;"
-      class="interface bordered"
-    >
-      <button
-        style="position: absolute;"
-      >
-        test
-      </button>
-    </div>
+      class="interface"
+    />
   </div>
 </template>
 
 <style>
+.topo-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .contours {
+  width: 100%;
   height: 100%;
 }
 
 .interface {
   position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
   width: 100%;
+}
 
+.controls-container {
+  position: fixed;
+  z-index: 99;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
 }
 
 .mouse-interface {
