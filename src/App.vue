@@ -67,8 +67,10 @@
   </div>
 </template>
 
-<script>
-import MouseTopo from './vue-mouse-topography.vue';
+<script setup>
+import { ref, reactive } from 'vue'
+
+import MouseTopo from './vue-mouse-topography.vue'
 
 const CONTROLS = {
   scale: {
@@ -97,23 +99,19 @@ const CONTROLS = {
   },
 }
 
-export default {
-  name: 'App',
-  components: { MouseTopo },
-  data() {
-    return {
-      paused: false, interfaceId: 'mouse-interface', controls: CONTROLS, 
-    }
-  },
-  methods: {
-    reset () {
-      this.$refs.topo.reset()
-    },
-    randomize () {
-      this.$refs.topo.randomize()
-    },
-  },
-};
+const paused = ref(false)
+const interfaceId = ref('mouse-interface')
+const controls = reactive(CONTROLS)
+
+const topo = ref(null)
+
+function reset() {
+  topo.reset()
+}
+
+function randomize() {
+  topo.randomize()
+}
 </script>
 
 <style>

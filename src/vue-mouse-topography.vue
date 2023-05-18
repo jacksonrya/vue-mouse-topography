@@ -1,6 +1,7 @@
 <template>
   <div 
     id="default-interface"
+    ref="root"
     class="topography"
     :class="{ noninteractive: !usingDefaultInterface }"
   >
@@ -11,198 +12,203 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import {
+  computed, defineExpose, defineProps, ref, watch, onMounted, onUnmounted,
+} from 'vue'
+
 import { MouseTopography } from './MouseTopography'
-
-const DEFAULT_SCALE_COEFFICIENT = 20 // Degree of polygon simplification
-const DEFAULT_PING_TIME = 15 // Amount of time(ms) between updates, in milliseconds.
-const DEFAULT_FORCE = 8 // The amount of 'z' added to a point during mouse movement.
-const DEFAULT_DECAY_TIME = 2000 // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
-
-const DEFAULT_INTERFACE_ID = 'default-interface'
 
 var id = 0 // Unique id of of this component // TODO: test that this enables parallel topography instances
 
 // TODO: clean up contours.js
 
-export default {
-  name: 'VueMouseTopography',
-  props: {
-    // Degree to which simplification is applied to the contours.
-    scale: {
-      type: Number,
-      required: false,
-      default () {
-        return DEFAULT_SCALE_COEFFICIENT
-      },
-    },
 
-    // Amount of time(ms) between updates.
-    ping: {
-      type: Number,
-      required: false,
-      default () {
-        return DEFAULT_PING_TIME
-      },
-    },
-
-    // The amount of 'z' added to a point during mouse movement.
-    force: {
-      type: Number,
-      required: false,
-      default () {
-        return DEFAULT_FORCE
-      },
-    },
-
-    // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
-    decay: {
-      type: Number,
-      required: false,
-      default () {
-        return DEFAULT_DECAY_TIME
-      },
-    },
-
-    // The ID of the HTML element that acts as the mouse interface. The element that will be used to track the mouse.
-    interfaceId: {
-      type: String,
-      required: false,
-      default () {
-        return DEFAULT_INTERFACE_ID
-      },
-    },
-
-    paused: {
-      type: Boolean,
-      required: false,
-      default() {
-        return false
-      },
+const props = defineProps( {
+  // Degree to which simplification is applied to the contours.
+  scale: {
+    type: Number,
+    required: false,
+    default () {
+      return 20
     },
   },
-  data () {
-    return {
-      sketchId: 'p5-canvas-' + ++id, // Unique id that matches the a child element's id.
-      mouseTopo: undefined, // Topography drawing bound to mouse movements
-    }
-  },
-  computed: {
-    usingDefaultInterface() {
-      return this.interfaceId == DEFAULT_INTERFACE_ID
-    },
 
-    // Width of this component's root element.
-    width () {
-      return Math.ceil(this.$el.clientWidth)
-    },
-
-    // Height of this component's root element.
-    height () {
-      return Math.ceil(this.$el.clientHeight)
-    },
-
-    topoConfig () {
-      return {
-        canvasId: this.sketchId,
-        canvasSize: { width: this.width, height: this.height },
-        scale: this.scale,
-        decay: this.decay,
-        force: this.force,
-        ping: this.ping,
-        interfaceEl: document.getElementById(this.interfaceId),
-      }
-    },
-
-    /** The element that is the mouse interface for drawing the topography. Any element in the document. */
-    mouseInterfaceEl() {
-      return document.getElementById(this.interfaceId)
-    }, 
-
-    /** The mouse interface's events and handler functions for when each event is triggered */
-    interfaceEventHandlers() {
-      return {
-        mousemove: this.handleMousemove,
-        mouseleave: this.disable,
-        click: this.handleClick,
-      }
+  // Amount of time(ms) between updates.
+  ping: {
+    type: Number,
+    required: false,
+    default () {
+      return 15
     },
   },
-  watch: {
-    decay: function(newDecay) {
-      this.mouseTopo.updateDecay(newDecay)
-    },
-    force: function(newForce) {
-      this.mouseTopo.updateForce(newForce)
-    },
-    ping: function(newPing) {
-      this.mouseTopo.updatePing(newPing)
-    },
-    paused: function(newPaused) {
-      newPaused ? this.pause() : this.resume()
+
+  // The amount of 'z' added to a point during mouse movement.
+  force: {
+    type: Number,
+    required: false,
+    default () {
+      return 8
     },
   },
-  mounted () {
-    this.mouseTopo = new MouseTopography(this.topoConfig)
-    this.trackMouse()
-  },
-  unmounted () {
-    this.untrackMouse()
-    this.mouseTopo.kill()
-  },
-  methods: {
-    handleClick (e) {
-      this.mouseTopo.handleClick(e)
-    },
 
-    handleMousemove (e) {
-      this.mouseTopo.updateMousePosition(e)
-    },
-
-    handleMouseleave () {
-      this.disable()
-    },
-
-    pause() {
-      this.untrackMouse()
-    },
-
-    resume() {
-      this.trackMouse()
-    },
-
-    trackMouse() {
-      // ?? should the event listeners capture events (be the first to process before others in the DOM tree)
-      // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#matching_event_listeners_for_removal
-      Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
-        this.mouseInterfaceEl.addEventListener(event, handler, { capture: true })
-      })
-    },
-
-    untrackMouse() {
-      Object.entries(this.interfaceEventHandlers).forEach(([ event, handler ]) => {
-        this.mouseInterfaceEl.removeEventListener(event, handler, { capture: true })
-      })
-    },
-
-    /** Resets the topography and updates the config. */
-    reset () {
-      this.mouseTopo.resetSketch(this.topoConfig)
-    },
-
-    /** Randomizes the topography. */
-    randomize() {
-      this.mouseTopo.randomizeSketch()
-    },
-
-    /**
-     * Resets the variables that change the state of the topography.
-     */
-    disable () {
-      this.mouseTopo.disable()
+  // Amount of time(ms) before a cell stops growing when the mouse hovers over a cell.
+  decay: {
+    type: Number,
+    required: false,
+    default () {
+      return 2000
     },
   },
+
+  // The ID of the HTML element that acts as the mouse interface. The element that will be used to track the mouse.
+  interfaceId: {
+    type: String,
+    required: false,
+    default () {
+      return 'default-interface'
+    },
+  },
+
+  paused: {
+    type: Boolean,
+    required: false,
+    default() {
+      return false
+    },
+  },
+})
+
+const sketchId = 'p5-canvas-' + ++id; // Unique id that matches the a child element's id.
+const mouseTopo = undefined; // Topography drawing bound to mouse movements
+
+const root = ref(null)
+
+const usingDefaultInterface = computed(() => {
+  return props.interfaceId == 'default-interface'
+})
+
+// Width of this component's root element.
+const width = computed(() => {
+  return Math.ceil(root.clientWidth)
+})
+
+// Height of this component's root element.
+const height = computed(() => {
+  return Math.ceil(root.clientHeight)
+})
+
+const topoConfig = computed(() => {
+  return {
+    canvasId: sketchId,
+    canvasSize: { width, height },
+    scale: props.scale,
+    decay: props.decay,
+    force: props.force,
+    ping: props.ping,
+    interfaceEl: document.getElementById(props.interfaceId),
+  }
+})
+
+/** The element that is the mouse interface for drawing the topography. Any element in the document. */
+const mouseInterfaceEl = computed(() => {
+  return document.getElementById(props.interfaceId)
+}) 
+
+/** The mouse interface's events and handler functions for when each event is triggered */
+const interfaceEventHandlers = computed(() => {
+  return {
+    mousemove: handleMousemove,
+    mouseleave: disable,
+    click: handleClick,
+  }
+})
+
+
+watch(() => props.decay, newDecay => {
+  this.mouseTopo.updateDecay(newDecay)
+})
+
+watch(() => props.force, newForce => {
+  this.mouseTopo.updateForce(newForce)
+})
+
+watch(() => props.ping, newPing => {
+  this.mouseTopo.updatePing(newPing)
+})
+
+watch(() => props.paused, newPaused => {
+  newPaused ? pause() : resume()
+})
+
+onMounted(() => {
+  mouseTopo.value = new MouseTopography(topoConfig)
+  trackMouse()
+})
+
+onUnmounted(() => {
+  untrackMouse()
+  mouseTopo.value.kill()
+})
+
+function handleClick(e) {
+  mouseTopo.value.handleClick(e)
 }
+
+function handleMousemove(e) {
+  mouseTopo.value.updateMousePosition(e)
+}
+
+function handleMouseleave() {
+  disable()
+}
+
+function pause() {
+  untrackMouse()
+}
+
+function resume() {
+  trackMouse()
+}
+
+function trackMouse() {
+  // ?? should the event listeners capture events (be the first to process before others in the DOM tree)
+  // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#matching_event_listeners_for_removal
+  Object.entries(interfaceEventHandlers).forEach(([ event, handler ]) => {
+    mouseInterfaceEl.addEventListener(event, handler, { capture: true })
+  })
+}
+
+function untrackMouse() {
+  Object.entries(interfaceEventHandlers).forEach(([ event, handler ]) => {
+    mouseInterfaceEl.removeEventListener(event, handler, { capture: true })
+  })
+}
+
+/** Resets the topography and updates the config. */
+function reset() {
+  mouseTopo.value.resetSketch(this.topoConfig)
+}
+
+/** Randomizes the topography. */
+function randomize() {
+  mouseTopo.value.randomizeSketch()
+}
+
+/**
+ * Resets the variables that change the state of the topography.
+ */
+function disable() {
+  mouseTopo.value.disable()
+}
+
+defineExpose({
+  pause,
+  resume,
+  disable,
+  reset,
+  randomize,
+})
 </script>
 
 <style>
