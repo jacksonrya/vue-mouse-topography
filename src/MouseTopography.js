@@ -138,6 +138,12 @@ export class MouseTopography {
   /** Randomizes the topography. */
   randomizeSketch() {
     this.sketcher.sketch.randomize()
+    return this
+  }
+
+  raiseImage(img) {
+    this.sketcher.sketch.raiseImage(img)
+    return this
   }
 
   handleClick(e) {

@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import bitmapImage from './4b0k-graffiti-bitmap.png'
 import { MouseTopography } from './MouseTopography'
 
 const DEFAULT_SCALE_COEFFICIENT = 20 // Degree of polygon simplification
@@ -85,6 +86,7 @@ export default {
     return {
       sketchId: 'p5-canvas-' + ++id, // Unique id that matches the a child element's id.
       mouseTopo: undefined, // Topography drawing bound to mouse movements
+      bitmapImage,
     }
   },
   computed: {
@@ -143,7 +145,8 @@ export default {
     },
   },
   mounted () {
-    this.mouseTopo = new MouseTopography(this.topoConfig)
+    console.log(this.bitmapImage)
+    this.mouseTopo = new MouseTopography(this.topoConfig).randomizeSketch().raiseImage(this.bitmapImage)
     this.trackMouse()
   },
   unmounted () {
@@ -200,6 +203,10 @@ export default {
      */
     disable () {
       this.mouseTopo.disable()
+    },
+
+    addImageToTopography(img) {
+      this.mouseTopo.raiseImage(img)
     },
   },
 }

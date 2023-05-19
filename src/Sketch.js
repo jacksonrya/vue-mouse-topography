@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { Image } from 'image-js'
 import P5 from 'p5'
 
 import { Contours, THRESHOLD_OPTIONS } from './Contours'
@@ -125,6 +126,23 @@ class Sketch {
     this.p5.redraw()
   }
 
+  async raiseImage(img) {
+    const loadedImg = await Image.load(img)
+    const resizedImg = loadedImg.resize({ height: this.display.cellDimensions.height })
+    const greyImg = resizedImg.combineChannels().invert()
+    console.log(resizedImg.data, this.topography.matrix)
+    // TODO: matrix is inaccurate size relative to the display grid resolution
+    // since matrix is not same size, image overlay cannot be easily merged
+    // TODO: enable method for 'raising' to be relative to the matrix range, while also increaasing the matrix max (this can be assumed if randomize is always uses the same range and standard deviation
+
+    
+    // scale image to resolution (image pixel height = resolution height)
+    // use algorithmic size shrinker (eg bicubic) (TODO: 4b0k bitmaps should be pre-shrunk server side for most common resolutions)
+    // resize and center in container (fill a larger 2d array with zeros in order to 'center' the image that fits within)
+    // matrix additive manipulation between the current matrix and the wide-cropped image bitmap
+    // set matrix as result
+  }
+
   // ?? should the second parameter be an object that accepts: force, radius, direction (up vs down)
   raiseAtPoint (pointOnCanvas, force = 0) {
     const { x, y } = pointOnCanvas
@@ -149,6 +167,10 @@ class Sketch {
       // this._resetStrokeWeight()
     }
     // this.constructor.setup(this.p5, this.canvas.size)
+  }
+
+  preload() {
+
   }
 
   static setup(p5, canvasSize) {

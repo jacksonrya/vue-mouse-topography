@@ -86,6 +86,14 @@ export class Contours {
     this._randomizeMatrix()
   }
 
+  raiseImage(img) {
+    // scale image to resolution (image pixel height = resolution height)
+    // use algorithmic size shrinker (eg bicubic) (TODO: 4b0k bitmaps should be pre-shrunk server side for most common resolutions)
+    // resize and center in container (fill a larger 2d array with zeros in order to 'center' the image that fits within)
+    // matrix additive manipulation between the current matrix and the wide-cropped image bitmap
+    // set matrix as result
+  }
+
   raise({ x, y }, zDelta = 100, density = 4) {
     // calculate distances to closest nodes
     const pos = this._getMatrixIndex(x, y)
